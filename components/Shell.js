@@ -15,7 +15,6 @@ const navigationItems = [
   { href: "/material-consumption", label: "Consumption", icon: "◔" },
   { href: "/upload", label: "Upload Data", icon: "⇧" },
   { href: "/reports", label: "Reports", icon: "▤" },
-  { href: "/settings", label: "Settings", icon: "⚙" },
 ];
 
 export default function Shell({ children }) {
