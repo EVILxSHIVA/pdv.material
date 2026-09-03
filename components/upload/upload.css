@@ -1,0 +1,154 @@
+.upload {
+    max-width: 760px;
+}
+
+.billSuccessBanner {
+    padding: 14px 20px;
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    color: #065f46;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* Document Type Selector (Tax Invoice vs Proforma Invoice) */
+.billTypeSelector {
+    padding: 14px 18px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+}
+
+.typeSelectorLabel {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #344054;
+    margin-bottom: 10px;
+}
+
+.typeButtonGroup {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.typeButton {
+    flex: 1;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 2px solid #d9dfe9;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    color: #344054;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.typeButton:hover {
+    border-color: #a5b4fc;
+    background: #fafaff;
+}
+
+.typeButton.selected {
+    border-color: #4f46e5;
+    background: #eef2ff;
+    color: #4338ca;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.dropzone {
+    border: 2px dashed #c7d2fe;
+    border-radius: 11px;
+    background: #fafaff;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    padding: 24px 20px;
+}
+
+.dropzone h2 {
+    font-size: 15px;
+}
+
+.dropzone p,
+.dropzone small {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.dropzone small {
+    margin-top: 6px;
+}
+
+.uploadIcon {
+    width: 44px;
+    height: 44px;
+    background: #e0e7ff;
+    color: #4f46e5;
+    border-radius: 10px;
+    font-size: 22px;
+    display: grid;
+    place-items: center;
+}
+
+.fileRow {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+.fileRow>span {
+    font-size: 22px;
+    color: #4f46e5;
+}
+
+.fileRow div {
+    flex: 1;
+}
+
+.fileRow b,
+.fileRow small {
+    display: block;
+    font-size: 13px;
+}
+
+.fileRow small {
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.fileDownloadLink {
+    color: #4f46e5;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.fileDownloadLink:hover {
+    color: #3730a3;
+}
+
+.fileDownloadLink small {
+    color: var(--muted);
+    font-weight: normal;
+}

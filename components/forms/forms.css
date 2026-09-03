@@ -1,0 +1,214 @@
+.formCard {
+    padding: 22px
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 17px
+}
+
+.formGrid label,
+.item label,
+.filterModal label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #344054;
+    font-size: 12px;
+    font-weight: 600
+}
+
+.formGrid input,
+.item input {
+    height: 42px;
+    border: 1px solid #d9dfe9;
+    border-radius: 7px;
+    padding: 0 11px;
+    font: 13px var(--font-geist-sans);
+    outline-color: #818cf8;
+    width: 100%
+}
+
+.itemList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: #fcfcfd;
+    align-items: end
+}
+
+.item .purpose {
+    grid-column: span 2
+}
+
+.calculated {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 8px
+}
+
+.calculated b {
+    font-size: 13px;
+    color: #172033
+}
+
+.charge {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr auto;
+    gap: 10px
+}
+
+.charge select,
+.charge input {
+    height: 42px;
+    border: 1px solid #d9dfe9;
+    border-radius: 7px;
+    padding: 0 11px;
+    font: 13px var(--font-geist-sans)
+}
+
+.summary {
+    margin-left: auto;
+    width: min(420px, 100%);
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px
+}
+
+.summary span,
+.summary strong {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 0;
+    font-size: 13px;
+    color: var(--muted)
+}
+
+.summary strong {
+    font-size: 16px;
+    color: var(--ink);
+    border-top: 1px solid var(--line);
+    margin-top: 5px;
+    padding-top: 15px
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px
+}
+
+.tableCard {
+    padding: 0
+}
+
+.tableCard>.sectionHead {
+    padding: 20px 22px;
+    margin: 0
+}
+
+.tableScroll {
+    overflow: auto
+}
+
+.tableScroll table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px
+}
+
+.tableScroll th {
+    text-align: left;
+    color: #667085;
+    font-size: 11px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    background: #fafbfc;
+    padding: 13px 22px;
+    white-space: nowrap
+}
+
+.tableScroll td {
+    padding: 15px 22px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    white-space: nowrap
+}
+
+@media(max-width:1100px) {
+    .item {
+        grid-template-columns: repeat(3, 1fr)
+    }
+
+    .item .purpose {
+        grid-column: span 2
+    }
+}
+
+@media(max-width:767px) {
+    .formGrid {
+        grid-template-columns: 1fr;
+        gap: 14px
+    }
+
+    .formCard {
+        padding: 16px
+    }
+
+    .item {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 13px
+    }
+
+    .item>label:first-child,
+    .item .purpose {
+        grid-column: 1/-1
+    }
+
+    .item .calculated {
+        grid-column: span 1
+    }
+
+    .item .remove {
+        height: 42px;
+        align-self: end
+    }
+
+    .charge {
+        grid-template-columns: 1fr 1fr
+    }
+
+    .charge input:nth-child(2) {
+        grid-column: 1/-1
+    }
+
+    .formActions {
+        position: sticky;
+        bottom: 0;
+        background: var(--bg);
+        padding: 10px 0
+    }
+
+    .formActions button {
+        flex: 1
+    }
+
+    .summary {
+        width: 100%
+    }
+}

@@ -1,0 +1,295 @@
+.tableCard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.tableControls {
+    border-bottom: 1px solid var(--line);
+    background: #fafbfc;
+}
+
+.tableControls .toolbar {
+    padding: 16px 22px;
+}
+
+.tableStats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 22px 14px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.resetLink {
+    background: transparent;
+    border: none;
+    color: #4f46e5;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.resetLink:hover {
+    color: #3730a3;
+}
+
+.tableScroll {
+    overflow: auto;
+}
+
+.tableScroll table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+}
+
+.tableScroll th {
+    text-align: left;
+    color: #667085;
+    font-size: 11px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    background: #fafbfc;
+    padding: 13px 22px;
+    white-space: nowrap;
+}
+
+.tableScroll td {
+    padding: 15px 22px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.tableScroll tbody tr:hover {
+    background: #fbfcfe;
+}
+
+.emptyTable {
+    padding: 60px 20px !important;
+    text-align: center;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+}
+
+.emptyState span {
+    font-size: 32px;
+}
+
+.emptyState p {
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   CRUD MODAL STYLES
+   ========================================================================== */
+
+.modalBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.modalContent {
+    background: white;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    animation: slideUp 0.2s ease-out;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.modalHeader h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+}
+
+.modalHeader p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.modalCloseBtn {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #98a2b3;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.modalCloseBtn:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.modalBody {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.gridBody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formField label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #344054;
+}
+
+.formField input,
+.formField select {
+    height: 40px;
+    border: 1px solid #d9dfe9;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--ink);
+    background: white;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.formField input:focus,
+.formField select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.viewField {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+}
+
+.viewLabel {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.viewValue {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 500;
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 24px;
+    background: #fafbfc;
+    border-top: 1px solid var(--line);
+}
+
+/* Delete Specific */
+.deleteModal {
+    max-width: 480px;
+}
+
+.dangerHeader {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.dangerIcon {
+    font-size: 28px;
+}
+
+.removeBtn {
+    background: #dc2626;
+    color: white;
+    border: 1px solid #dc2626;
+    border-radius: 7px;
+    min-height: 40px;
+    padding: 0 16px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.removeBtn:hover {
+    background: #b91c1c;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@media(max-width:767px) {
+    .tableControls .toolbar {
+        padding: 14px;
+    }
+
+    .tableStats {
+        padding: 6px 14px 12px;
+    }
+
+    .gridBody {
+        grid-template-columns: 1fr;
+    }
+
+    .modalContent {
+        max-height: 95vh;
+    }
+}

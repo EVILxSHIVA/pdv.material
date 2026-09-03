@@ -1,0 +1,263 @@
+.app {
+    min-height: 100vh
+}
+
+.sidebar {
+    position: fixed;
+    z-index: 20;
+    inset: 0 auto 0 0;
+    width: 256px;
+    background: #111a36;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    transition: width .2s, transform .2s
+}
+
+.brand {
+    height: 74px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0 20px;
+    border-bottom: 1px solid #233052
+}
+
+.brandMark {
+    width: 31px;
+    height: 31px;
+    border-radius: 8px;
+    background: #6366f1;
+    color: white;
+    display: grid;
+    place-items: center;
+    font-weight: 800
+}
+
+.brandName {
+    font-size: 17px;
+    color: white;
+    font-weight: 700
+}
+
+.close {
+    display: none;
+    margin-left: auto;
+    background: none;
+    color: white;
+    border: 0;
+    font-size: 28px
+}
+
+.navLabel {
+    padding: 25px 20px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: #7180a3
+}
+
+nav {
+    padding: 0 10px
+}
+
+nav a {
+    height: 45px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 3px 0
+}
+
+nav a:hover {
+    background: #202b4d;
+    color: #fff
+}
+
+nav a.active {
+    background: #4f46e5;
+    color: #fff
+}
+
+nav i {
+    font-style: normal;
+    font-size: 19px;
+    width: 19px;
+    text-align: center
+}
+
+.sideFoot {
+    margin-top: auto;
+    border-top: 1px solid #233052;
+    padding: 16px 18px;
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.sideFoot b,
+.sideFoot small {
+    display: block;
+    font-size: 12px
+}
+
+.sideFoot small {
+    color: #91a0bd;
+    margin-top: 3px
+}
+
+.avatar,
+.headAvatar {
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 700
+}
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 10px
+}
+
+.workspace {
+    margin-left: 256px;
+    min-height: 100vh
+}
+
+header {
+    height: 74px;
+    background: white;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    gap: 18px
+}
+
+.crumb {
+    font-size: 14px;
+    color: var(--muted)
+}
+
+.crumb span {
+    padding: 0 8px;
+    color: #c1c7d3
+}
+
+.headRight {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px
+}
+
+.iconButton,
+.collapse,
+.menu {
+    border: 0;
+    background: transparent;
+    color: #475467;
+    font-size: 18px;
+    cursor: pointer
+}
+
+.menu {
+    display: none
+}
+
+.headAvatar {
+    width: 34px;
+    height: 34px;
+    font-size: 11px
+}
+
+.content {
+    max-width: 1440px;
+    margin: auto;
+    padding: 30px
+}
+
+.compact .sidebar {
+    width: 72px
+}
+
+.compact .brand {
+    padding: 0 20px
+}
+
+.compact .brandName,
+.compact nav span,
+.compact .navLabel,
+.compact .sideFoot>div:not(.avatar) {
+    display: none
+}
+
+.compact .sideFoot {
+    padding: 16px 21px
+}
+
+.compact .workspace {
+    margin-left: 72px
+}
+
+@media(max-width:767px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        box-shadow: 0 20px 40px #0b102633
+    }
+
+    .sidebar.open {
+        transform: translateX(0)
+    }
+
+    .workspace,
+    .compact .workspace {
+        margin-left: 0
+    }
+
+    .compact .sidebar {
+        width: 280px
+    }
+
+    .compact .brandName,
+    .compact nav span,
+    .compact .navLabel,
+    .compact .sideFoot>div:not(.avatar) {
+        display: block
+    }
+
+    .close,
+    .menu {
+        display: block
+    }
+
+    .collapse,
+    .crumb {
+        display: none
+    }
+
+    header {
+        height: 62px;
+        padding: 0 16px
+    }
+
+    .content {
+        padding: 18px 14px
+    }
+
+    .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 19;
+        border: 0;
+        background: #0f172a66
+    }
+}

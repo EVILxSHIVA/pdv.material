@@ -1,14 +1,4 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+:root { --navy:#172554; --indigo:#4f46e5; --ink:#172033; --muted:#667085; --line:#e7eaf0; --bg:#f6f7fb; --card:#fff; --green:#087443; --amber:#9a6700; --red:#c63535; }
 
 html {
   height: 100%;
@@ -24,9 +14,9 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -42,8 +32,13 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Hide Next.js development indicator badge in bottom-left corner */
+nextjs-portal,
+#nextjs-dev-indicator,
+[data-nextjs-dev-indicator],
+[data-nextjs-dev-overlay] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
 }

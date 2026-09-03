@@ -1,0 +1,19 @@
+.empty {
+    text-align: center;
+    padding: 70px 20px
+}
+
+.empty div {
+    font-size: 34px;
+    color: #818cf8
+}
+
+.empty h2 {
+    font-size: 17px;
+    margin: 14px 0 6px
+}
+
+.empty p {
+    font-size: 13px;
+    color: var(--muted)
+}

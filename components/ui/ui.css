@@ -1,0 +1,254 @@
+.pageTitle {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 26px
+}
+
+.pageTitle h1 {
+    font-size: 25px;
+    letter-spacing: -.03em;
+    line-height: 1.25
+}
+
+.pageTitle p,
+.sectionHead p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 5px
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px #10182806
+}
+
+.primary,
+.secondary,
+.remove {
+    border-radius: 7px;
+    min-height: 40px;
+    padding: 0 15px;
+    border: 1px solid;
+    cursor: pointer;
+    font: 600 13px var(--font-geist-sans)
+}
+
+.primary {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: white
+}
+
+.primary:disabled {
+    opacity: .45;
+    cursor: not-allowed
+}
+
+.secondary {
+    border-color: #d9dfe9;
+    background: white;
+    color: #344054
+}
+
+.remove {
+    border-color: #f0c4c4;
+    background: #fff8f8;
+    color: var(--red)
+}
+
+.sectionHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 14px
+}
+
+.sectionHead h2 {
+    font-size: 16px
+}
+
+.badge {
+    font-size: 11px;
+    padding: 5px 9px;
+    border-radius: 99px;
+    background: #e9f8ef;
+    color: #087443;
+    font-weight: 700
+}
+
+.badge.pending {
+    background: #fff4db;
+    color: #9a6700
+}
+
+.badge.inactive {
+    background: #f2f4f7;
+    color: #667085
+}
+
+.actions {
+    display: flex;
+    gap: 8px
+}
+
+.actions button {
+    border: 0;
+    background: transparent;
+    color: #4f46e5;
+    font-size: 12px;
+    cursor: pointer
+}
+
+.actions .danger {
+    color: var(--red)
+}
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center
+}
+
+.search {
+    height: 40px;
+    border: 1px solid #d9dfe9;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 11px;
+    width: 280px;
+    color: #98a2b3
+}
+
+.search input {
+    border: 0;
+    outline: 0;
+    width: 100%;
+    font-size: 13px
+}
+
+.filterInputs {
+    display: flex;
+    gap: 8px;
+    margin-left: auto
+}
+
+.filterInputs select,
+.filterInputs input,
+.filterModal select,
+.filterModal input {
+    height: 40px;
+    border: 1px solid #d9dfe9;
+    border-radius: 7px;
+    padding: 0 10px;
+    color: #475467;
+    background: white;
+    font: 13px var(--font-geist-sans)
+}
+
+.filterBtn {
+    display: none
+}
+
+.modalWrap {
+    display: none
+}
+
+.wide {
+    width: 100%
+}
+
+@media(max-width:767px) {
+    .pageTitle {
+        margin-bottom: 19px
+    }
+
+    .pageTitle h1 {
+        font-size: 21px
+    }
+
+    .pageTitle p {
+        font-size: 12px
+    }
+
+    .pageTitle .primary {
+        white-space: nowrap;
+        padding: 0 11px
+    }
+
+    .card {
+        padding: 16px;
+        border-radius: 10px
+    }
+
+    .sectionHead {
+        align-items: flex-start
+    }
+
+    .toolbar {
+        padding: 14px !important
+    }
+
+    .search {
+        width: 100%
+    }
+
+    .filterInputs {
+        display: none
+    }
+
+    .filterBtn {
+        display: block;
+        border: 1px solid #d9dfe9;
+        background: white;
+        border-radius: 7px;
+        padding: 0 11px;
+        height: 40px;
+        white-space: nowrap;
+        color: #344054
+    }
+
+    .modalWrap {
+        display: block;
+        position: fixed;
+        z-index: 30;
+        inset: 0;
+        background: #10182866
+    }
+
+    .filterModal {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 16px 16px 0 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px
+    }
+
+    .modalHead {
+        display: flex;
+        justify-content: space-between
+    }
+
+    .modalHead button {
+        border: 0;
+        background: transparent;
+        font-size: 24px
+    }
+
+    .filterModal label {
+        font-size: 13px
+    }
+}
