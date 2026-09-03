@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "MaterialFlow | Material Management",
+  title: "PDV Solutions | Material Management",
   description: "A responsive material management workspace",
   icons: {
     icon: "/icon.svg",
