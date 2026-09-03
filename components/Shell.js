@@ -53,8 +53,8 @@ export default function Shell({ children }) {
       <aside className={`sidebar ${isMobileMenuOpen ? "open" : ""}`}>
         {/* Brand Logo & Name */}
         <div className="brand">
-          <span className="brandMark">M</span>
-          <span className="brandName">MaterialFlow</span>
+          <span className="brandMark">P</span>
+          <span className="brandName">PDV Solutions</span>
           <button
             type="button"
             className="close"
@@ -90,9 +90,9 @@ export default function Shell({ children }) {
 
         {/* User profile footer at bottom of sidebar */}
         <div className="sideFoot">
-          <div className="avatar">SK</div>
+          <div className="avatar">SA</div>
           <div>
-            <b>Shivam Aggarwal</b>
+            <b>Shyam Aggarwal</b>
             <small>Administrator</small>
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function Shell({ children }) {
             >
               ♢
             </button>
-            <div className="headAvatar">SK</div>
+            <div className="headAvatar">SA</div>
           </div>
         </header>
 
