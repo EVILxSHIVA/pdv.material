@@ -1,2 +1,2 @@
-// Real Supplier Data (Starts empty - populated only by what you add)
+// Supplier Master Data (Starts empty - populated only by what you add)
 export const suppliers = [];

@@ -11,99 +11,104 @@ import "./forms.css";
 
 /**
  * Reusable Form for:
- * 1. New Purchase ("purchase")
- * 2. Material Issue ("issue")
+ * 1. New Purchase ("purchase") - All 100 columns from Row 1 of Mat PDV
+ * 2. Material Issue ("issue") - All 92 columns from Row 1 of Mat Issued
  * 3. Material Consumption ("consumption")
  */
 export default function Form({ kind, title }) {
   const router = useRouter();
   const isPurchase = kind === "purchase";
-  const formFieldList = fields[kind] || fields.purchase;
+  const isIssue = kind === "issue";
+  const allFieldList = fields[kind] || fields.purchase;
 
-  // 1. Form state
+  // Split into voucher header fields and material columns
+  const headerCutoff = isPurchase ? 13 : isIssue ? 5 : allFieldList.length;
+  const headerFields = allFieldList.slice(0, headerCutoff);
+  const materialFields = allFieldList.slice(headerCutoff);
+
+  // Form State
   const [fieldValues, setFieldValues] = useState({});
-  const [items, setItems] = useState([
-    { product: "", quantity: 1, unit: "Nos", rate: 0, consumed: 0 },
-  ]);
+  const [materialQuantities, setMaterialQuantities] = useState({});
+  const [searchMaterial, setSearchMaterial] = useState("");
   const [message, setMessage] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
 
-  // 2. Field change helper
+  // Field change handlers
   const handleFieldChange = (name, val) => {
     setFieldValues((prev) => ({ ...prev, [name]: val }));
   };
 
-  // 3. Item row helpers
-  const updateItem = (index, key, val) => {
-    const copy = [...items];
-    copy[index][key] = val;
-    setItems(copy);
+  const handleMaterialQtyChange = (materialName, qty) => {
+    setMaterialQuantities((prev) => ({ ...prev, [materialName]: qty }));
   };
 
-  const addItem = () => {
-    setItems([...items, { product: "", quantity: 1, unit: "Nos", rate: 0, consumed: 0 }]);
-  };
+  // Filter material fields by user search
+  const filteredMaterials = materialFields.filter((m) =>
+    m.toLowerCase().includes(searchMaterial.toLowerCase())
+  );
 
-  const removeItem = (index) => {
-    if (items.length > 1) {
-      setItems(items.filter((_, i) => i !== index));
-    }
-  };
+  // Count filled materials
+  const filledCount = Object.values(materialQuantities).filter((q) => q && Number(q) > 0).length;
 
-  // 4. Calculations (Subtotal and 18% GST for purchases)
-  const subtotal = items.reduce((sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.rate) || 0), 0);
-  const gstAmount = Math.round(subtotal * 0.18);
-  const grandTotal = subtotal + gstAmount;
-
-  // 5. Save form to localStorage
+  // Save form handler
   const handleSave = (e) => {
     e.preventDefault();
     const today = new Date().toLocaleDateString("en-GB");
 
     if (isPurchase) {
-      // Save to purchases list
-      const piNumber = fieldValues["PI Number"] || `PI-${Date.now().toString().slice(-4)}`;
+      const invNumber =
+        fieldValues["Invoice / Voucher No"] ||
+        fieldValues["SR No"] ||
+        `INV-${Date.now().toString().slice(-4)}`;
+
       const newPurchase = [
-        piNumber,
-        fieldValues["PI Date"] || today,
-        fieldValues["Supplier"] || "Direct Supplier",
-        fieldValues["Quotation Number"] || "QT-Auto",
-        String(items.length),
-        `₹ ${grandTotal.toLocaleString()}`,
+        invNumber,
+        fieldValues["Invoice date"] || today,
+        fieldValues["PURCHASE FROM"] || fieldValues["Location"] || "Direct Supplier",
+        `QT-${Date.now().toString().slice(-3)}`,
+        String(filledCount || 1),
+        fieldValues["Total Amt with GST"] ? `₹ ${fieldValues["Total Amt with GST"]}` : (fieldValues["invoice value"] ? `₹ ${fieldValues["invoice value"]}` : "—"),
         "Approved",
       ];
 
-      const existing = JSON.parse(localStorage.getItem("materialflow_real_purchases") || "[]");
-      localStorage.setItem("materialflow_real_purchases", JSON.stringify([newPurchase, ...existing]));
+      const existing = JSON.parse(localStorage.getItem("pdv_app_purchases") || "[]");
+      localStorage.setItem("pdv_app_purchases", JSON.stringify([newPurchase, ...existing]));
 
-      setMessage(`✓ Purchase ${piNumber} saved! Redirecting...`);
+      setMessage(`✓ Purchase ${invNumber} saved successfully! Redirecting...`);
       setTimeout(() => router.push("/purchases"), 1000);
     } else {
-      // Save to material issue or consumption history
-      const recordNumber = fieldValues["Issue Number"] || fieldValues["Consumption Number"] || `${kind === "issue" ? "MI" : "MC"}-${Date.now().toString().slice(-4)}`;
+      const recordNumber =
+        fieldValues["Mat issue / receive Challan No"] ||
+        fieldValues["V / Sl. No"] ||
+        fieldValues["Consumption No"] ||
+        `${isIssue ? "MI" : "MC"}-${Date.now().toString().slice(-4)}`;
+
       const newRecord = {
         number: recordNumber,
-        date: fieldValues["Issue Date"] || fieldValues["Date"] || today,
-        department: fieldValues["Department / Site"] || "Main Site",
-        itemsCount: items.length,
-        status: "Completed",
+        date: fieldValues["Date"] || fieldValues["Invoice date"] || today,
+        department: fieldValues["Name - Material issued to"] || fieldValues["Department / Site"] || fieldValues["Location"] || "Main Site",
+        itemsCount: filledCount || 1,
+        status: fieldValues["Issue/return"] || "Issued",
       };
 
-      const key = `materialflow_real_${kind}`;
+      const key = `pdv_app_${kind}`;
       const existing = JSON.parse(localStorage.getItem(key) || "[]");
       localStorage.setItem(key, JSON.stringify([newRecord, ...existing]));
 
-      setMessage(`✓ Record ${recordNumber} saved successfully!`);
+      setMessage(`✓ Record ${recordNumber} saved with ${filledCount} material quantities!`);
       setReloadKey((prev) => prev + 1);
       setFieldValues({});
-      setItems([{ product: "", quantity: 1, unit: "Nos", rate: 0, consumed: 0 }]);
-      setTimeout(() => setMessage(""), 3000);
+      setMaterialQuantities({});
+      setTimeout(() => setMessage(""), 3500);
     }
   };
 
   return (
     <Shell>
-      <Title title={title} desc={`Record and track ${title.toLowerCase()} operations.`} />
+      <Title
+        title={title}
+        desc={`Record and track ${title.toLowerCase()} operations with all specifications from Row 1.`}
+      />
 
       {message && (
         <div style={{ padding: "12px", background: "#ecfdf5", color: "#065f46", borderRadius: "8px", marginBottom: "16px", fontWeight: "bold" }}>
@@ -112,13 +117,13 @@ export default function Form({ kind, title }) {
       )}
 
       <form onSubmit={handleSave}>
-        {/* Section 1: Basic Information */}
+        {/* Section 1: Header / Transaction Details */}
         <section className="card formCard">
           <div className="sectionHead">
-            <h2>{isPurchase ? "Purchase Details" : `${title} Details`}</h2>
+            <h2>{isPurchase ? "Voucher / Purchase Details" : isIssue ? "Issue Voucher Details" : `${title} Details`}</h2>
           </div>
           <div className="formGrid">
-            {formFieldList.map((name) => (
+            {headerFields.map((name) => (
               <label key={name}>
                 {name}
                 <input
@@ -132,78 +137,58 @@ export default function Form({ kind, title }) {
           </div>
         </section>
 
-        {/* Section 2: Items List */}
-        <section className="card formCard">
-          <div className="sectionHead">
-            <h2>{isPurchase ? "Products" : "Materials"}</h2>
-            <button type="button" className="secondary" onClick={addItem}>+ Add Item</button>
-          </div>
-
-          <div className="itemList">
-            {items.map((item, i) => (
-              <div className="item" key={i}>
-                <label>
-                  Product
-                  <input
-                    type="text"
-                    placeholder="Name"
-                    required
-                    value={item.product}
-                    onChange={(e) => updateItem(i, "product", e.target.value)}
-                  />
-                </label>
-
-                <label>
-                  Quantity
-                  <input
-                    type="number"
-                    min="1"
-                    required
-                    value={item.quantity}
-                    onChange={(e) => updateItem(i, "quantity", Number(e.target.value))}
-                  />
-                </label>
-
-                <label>
-                  Unit
-                  <input
-                    type="text"
-                    value={item.unit}
-                    onChange={(e) => updateItem(i, "unit", e.target.value)}
-                  />
-                </label>
-
-                {isPurchase && (
-                  <label>
-                    Rate (₹)
-                    <input
-                      type="number"
-                      min="0"
-                      value={item.rate}
-                      onChange={(e) => updateItem(i, "rate", Number(e.target.value))}
-                    />
-                  </label>
-                )}
-
-                <button type="button" className="remove" onClick={() => removeItem(i)}>
-                  Remove
-                </button>
+        {/* Section 2: Material Specifications & Quantities (All columns from Row 1) */}
+        {materialFields.length > 0 && (
+          <section className="card formCard" style={{ marginTop: "20px" }}>
+            <div className="materialMatrixHead">
+              <div>
+                <h2>Material Specifications & Quantity Matrix</h2>
+                <p style={{ fontSize: "13px", color: "var(--muted)", marginTop: "2px" }}>
+                  All {materialFields.length} material columns from Row 1 ({filledCount} filled)
+                </p>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* Section 3: Summary (For Purchases) */}
-        {isPurchase && (
-          <section className="summary">
-            <span>Subtotal: <b>₹ {subtotal.toLocaleString()}</b></span>
-            <span>GST (18%): <b>₹ {gstAmount.toLocaleString()}</b></span>
-            <strong>Grand Total: <b>₹ {grandTotal.toLocaleString()}</b></strong>
+              <div className="matrixSearch">
+                <span>🔍</span>
+                <input
+                  type="text"
+                  placeholder="Filter material (e.g. nipple, gutka, drill, fitting, clamp...)"
+                  value={searchMaterial}
+                  onChange={(e) => setSearchMaterial(e.target.value)}
+                />
+                {searchMaterial && (
+                  <button type="button" onClick={() => setSearchMaterial("")} style={{ border: "none", background: "none", cursor: "pointer", color: "#98a2b3" }}>
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="materialMatrixGrid">
+              {filteredMaterials.map((matName) => {
+                const qtyVal = materialQuantities[matName] || "";
+                const isFilled = qtyVal !== "" && Number(qtyVal) > 0;
+                return (
+                  <div key={matName} className={`materialCell ${isFilled ? "filled" : ""}`}>
+                    <div className="materialCellTitle">{matName}</div>
+                    <div className="materialCellInput">
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Qty"
+                        value={qtyVal}
+                        onChange={(e) => handleMaterialQtyChange(matName, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </section>
         )}
 
-        {/* Section 4: Action Buttons */}
-        <section className="formActions">
+        {/* Section 3: Action Buttons */}
+        <section className="formActions" style={{ marginTop: "20px" }}>
           <button type="button" className="secondary" onClick={() => router.back()}>Cancel</button>
           <button type="submit" className="primary">{isPurchase ? "Save Purchase" : "Save Record"}</button>
         </section>
@@ -214,3 +199,4 @@ export default function Form({ kind, title }) {
     </Shell>
   );
 }
+

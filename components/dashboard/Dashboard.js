@@ -24,10 +24,19 @@ export default function Dashboard() {
   // Load real purchases from localStorage
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("materialflow_real_purchases") || "[]");
-      setPurchases(saved);
+      localStorage.removeItem("materialflow_real_purchases");
+      const raw = localStorage.getItem("pdv_app_purchases");
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (Array.isArray(saved)) {
+          setPurchases(saved);
+          return;
+        }
+      }
+      setPurchases([]);
     } catch (e) {
       console.warn("Could not read purchases:", e);
+      setPurchases([]);
     }
   }, []);
 

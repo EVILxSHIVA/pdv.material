@@ -76,21 +76,63 @@
 
 .badge {
     font-size: 11px;
-    padding: 5px 9px;
+    padding: 4px 10px;
     border-radius: 99px;
     background: #e9f8ef;
     color: #087443;
-    font-weight: 700
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.02em;
+}
+
+.badge.paid {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.badge.approved {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.badge.issued {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+.badge.completed {
+    background: #f0fdf4;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+.badge.returned {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
 }
 
 .badge.pending {
-    background: #fff4db;
-    color: #9a6700
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.badge.active {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
 }
 
 .badge.inactive {
-    background: #f2f4f7;
-    color: #667085
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
 }
 
 .actions {

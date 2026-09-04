@@ -1,15 +1,21 @@
 import Listing from "@/components/listing/Listing";
 import { products } from "@/data/products";
 
-// Table column headers for products
+// Table column headers for products (All top-line fields from Excel)
 const productHeaders = [
   "Product Code",
-  "Product Name",
+  "Material Description",
+  "Size / Spec",
   "Category",
   "Unit",
-  "Description",
   "Supplier",
-  "Rate",
+  "Rate (₹)",
+  "GST %",
+  "PI / Invoice No",
+  "PI Date",
+  "Reorder Level",
+  "Location",
+  "Remarks",
   "Status",
 ];
 

@@ -6,10 +6,10 @@ import { exportToExcel } from "@/lib/exportToExcel";
 
 /**
  * Real Activity History Table for Material Issue and Material Consumption
- * Reads only what the user has saved and supports Excel export.
+ * Records entered manually by user.
  */
 export default function History({ kind, title, refreshTrigger }) {
-  const storageKey = `materialflow_real_${kind}`;
+  const storageKey = `pdv_app_${kind}`;
   const [historyList, setHistoryList] = useState([]);
 
   const historyHeaders = [
@@ -23,17 +23,19 @@ export default function History({ kind, title, refreshTrigger }) {
   // Load history records from localStorage
   useEffect(() => {
     try {
+      localStorage.removeItem(`materialflow_real_${kind}`);
       const savedHistory = localStorage.getItem(storageKey);
       if (savedHistory) {
         const parsed = JSON.parse(savedHistory);
         if (Array.isArray(parsed)) {
           setHistoryList(parsed);
+          return;
         }
-      } else {
-        setHistoryList([]);
       }
+      setHistoryList([]);
     } catch (error) {
       console.warn("Could not read history:", error);
+      setHistoryList([]);
     }
   }, [storageKey, refreshTrigger]);
 

@@ -45,9 +45,14 @@ export function Filters({
         <div className="filterInputs">
           <select value={status} onChange={handleStatusSelect}>
             <option value="All Status">All Status</option>
+            <option value="Paid">Paid</option>
+            <option value="Approved">Approved</option>
+            <option value="Pending">Pending</option>
+            <option value="Issued">Issued</option>
+            <option value="Completed">Completed</option>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
-            <option value="Pending">Pending</option>
+            <option value="Returned">Returned</option>
           </select>
 
           {/* Button to reset filters */}
@@ -90,9 +95,14 @@ export function Filters({
               Status
               <select value={status} onChange={handleStatusSelect}>
                 <option value="All Status">All Status</option>
+                <option value="Paid">Paid</option>
+                <option value="Approved">Approved</option>
+                <option value="Pending">Pending</option>
+                <option value="Issued">Issued</option>
+                <option value="Completed">Completed</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
+                <option value="Returned">Returned</option>
               </select>
             </label>
 

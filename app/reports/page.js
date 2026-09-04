@@ -8,18 +8,37 @@ import { exportToExcel } from "@/lib/exportToExcel";
 import "@/components/ui/ui.css";
 
 export default function ReportsPage() {
-  const [data, setData] = useState({ suppliers: [], products: [], purchases: [], issues: [], consumptions: [], bills: [] });
+  const [data, setData] = useState({
+    suppliers: [],
+    products: [],
+    purchases: [],
+    issues: [],
+    consumptions: [],
+    bills: [],
+  });
 
   // Load all data from localStorage
   useEffect(() => {
-    const get = (k) => JSON.parse(localStorage.getItem(k) || "[]");
+    const get = (k) => {
+      try {
+        const raw = localStorage.getItem(k);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+      return [];
+    };
+
     setData({
-      suppliers: get("materialflow_real_suppliers"),
-      products: get("materialflow_real_products"),
-      purchases: get("materialflow_real_purchases"),
-      issues: get("materialflow_real_issue"),
-      consumptions: get("materialflow_real_consumption"),
-      bills: get("materialflow_real_bills"),
+      suppliers: get("pdv_app_suppliers"),
+      products: get("pdv_app_products"),
+      purchases: get("pdv_app_purchases"),
+      issues: get("pdv_app_issue"),
+      consumptions: get("pdv_app_consumption"),
+      bills: get("pdv_app_bills"),
     });
   }, []);
 

@@ -17,11 +17,11 @@ import "./listing.css";
  * Used for: Suppliers, Products, Purchases
  */
 export default function Listing({ type, title, data = [], heads }) {
-  const storageKey = `materialflow_real_${type}`;
+  const storageKey = `pdv_app_${type}`;
   const isPurchase = type === "purchases";
 
   // 1. Component State
-  const [records, setRecords] = useState(data);
+  const [records, setRecords] = useState([]);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All Status");
   const [modal, setModal] = useState({ isOpen: false, mode: "add", record: null, index: null });
@@ -32,10 +32,20 @@ export default function Listing({ type, title, data = [], heads }) {
   // 2. Load stored records on initial mount
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      setRecords(saved);
+      // Clear legacy storage cache
+      localStorage.removeItem(`materialflow_real_${type}`);
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw);
+        if (Array.isArray(saved)) {
+          setRecords(saved);
+          return;
+        }
+      }
+      setRecords([]);
     } catch (e) {
       console.warn("Failed to load records:", e);
+      setRecords([]);
     }
   }, [storageKey]);
 
@@ -80,7 +90,7 @@ export default function Listing({ type, title, data = [], heads }) {
         title={title}
         desc={`Manage your ${title.toLowerCase()} records.`}
         action={
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <button
               type="button"
               className="secondary"

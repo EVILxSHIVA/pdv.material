@@ -13,7 +13,7 @@ import "./upload.css";
  * Select between: Tax Invoice or Proforma Invoice (PI)
  */
 export default function Upload() {
-  const storageKey = "materialflow_real_bills";
+  const storageKey = "pdv_app_bills";
 
   // 1. Form state
   const [billType, setBillType] = useState("Tax Invoice");
@@ -29,10 +29,12 @@ export default function Upload() {
   // 2. Load stored bills on page load
   useEffect(() => {
     try {
+      localStorage.removeItem("materialflow_real_bills");
       const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      setBills(saved);
+      setBills(Array.isArray(saved) ? saved : []);
     } catch (e) {
       console.warn("Could not read bills:", e);
+      setBills([]);
     }
   }, []);
 
@@ -42,10 +44,24 @@ export default function Upload() {
     localStorage.setItem(storageKey, JSON.stringify(newList));
   };
 
-  // 3. File select helper (converts file to base64 so you can download it anytime)
+  // 3. File select helper (Strictly validates PDF format and converts to base64)
   const handleFile = (e) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
+
+    // Strict PDF validation
+    const isPdf =
+      selected.type === "application/pdf" ||
+      selected.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
+      alert("Only PDF files (.pdf) are allowed. Please select a valid PDF file.");
+      e.target.value = "";
+      setFile(null);
+      setFileData("");
+      return;
+    }
+
     setFile(selected);
 
     const reader = new FileReader();
@@ -57,7 +73,12 @@ export default function Upload() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!file) {
-      alert("Please choose a file to attach.");
+      alert("Please choose a PDF file to attach.");
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      alert("Only PDF files are allowed.");
       return;
     }
 
@@ -103,7 +124,7 @@ export default function Upload() {
 
   return (
     <Shell>
-      <Title title="Upload Bills & Invoices" desc="Upload soft copies of Tax Invoices and Proforma Invoices." />
+      <Title title="Upload Bills & Invoices" desc="Upload PDF soft copies of Tax Invoices and Proforma Invoices (PI)." />
 
       {message && <div className="billSuccessBanner">{message}</div>}
 
@@ -166,17 +187,40 @@ export default function Upload() {
             </label>
           </div>
 
-          {/* File Input */}
+          {/* File Input Dropzone */}
           <div className="dropzone" style={{ marginTop: "16px" }}>
-            <p>Attach soft copy (PDF or Image)</p>
+            <div className="uploadIcon">⇪</div>
+            <h2>Choose a PDF document to upload</h2>
+            <p>Upload soft copies of invoices, challans or vouchers</p>
             <label className="primary" style={{ cursor: "pointer", marginTop: "8px" }}>
-              Choose File
-              <input hidden type="file" accept=".pdf,.png,.jpg,.jpeg" onChange={handleFile} />
+              Choose PDF File
+              <input hidden type="file" accept=".pdf,application/pdf" onChange={handleFile} />
             </label>
-            {file && <p style={{ marginTop: "10px", fontWeight: "bold" }}>📎 {file.name} ({(file.size / 1024).toFixed(1)} KB)</p>}
+            <small>Supports: PDF format only</small>
           </div>
 
-          <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
+          {/* Selected File Card */}
+          {file && (
+            <div className="fileRow" style={{ marginTop: "14px" }}>
+              <span>📄</span>
+              <div>
+                <b>{file.name}</b>
+                <small>{(file.size / 1024).toFixed(1)} KB • PDF Document</small>
+              </div>
+              <button
+                type="button"
+                className="remove"
+                onClick={() => {
+                  setFile(null);
+                  setFileData("");
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          )}
+
+          <div style={{ marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
             <button type="submit" className="primary">✓ Upload {billType}</button>
           </div>
         </form>
