@@ -8,6 +8,7 @@ import "./shell.css";
 // Navigation links for the sidebar
 const navigationItems = [
   { href: "/", label: "Dashboard", icon: "⌂" },
+  { href: "/party-ledger", label: "Party Ledger", icon: "⚖" },
   { href: "/suppliers", label: "Suppliers", icon: "♙" },
   { href: "/products", label: "Products", icon: "▦" },
   { href: "/purchases", label: "Purchases", icon: "▣" },
