@@ -63,3 +63,5 @@ NEXT_PUBLIC_GOOGLE_SHEET_URL="https://docs.google.com/spreadsheets/d/YOUR_SHEET_
 1. Go to **Reports & Export Hub** in your app.
 2. Click **"📤 Sync All to Google Sheets in 1-Click"**.
 3. All your data across all 6 modules will instantly be written to your Google Sheet!
+
+fdmnb
