@@ -9,6 +9,7 @@ import { Actions } from "@/components/ui/Actions";
 import { Filters } from "@/components/ui/Filters";
 import RecordModal from "@/components/ui/RecordModal";
 import { exportToExcel } from "@/lib/exportToExcel";
+import { triggerAutoSyncToGoogleSheets } from "@/google_sheets_sync/syncClient";
 import "@/components/ui/ui.css";
 import "./listing.css";
 
@@ -53,6 +54,8 @@ export default function Listing({ type, title, data = [], heads }) {
   const saveRecords = (newList) => {
     setRecords(newList);
     localStorage.setItem(storageKey, JSON.stringify(newList));
+    // ⚡ Real-Time Auto-Upload to Google Sheets
+    triggerAutoSyncToGoogleSheets();
   };
 
   // 3. Modal open helpers

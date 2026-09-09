@@ -129,6 +129,17 @@ export default function Shell({ children }) {
 
           {/* Header Right Side */}
           <div className="headRight">
+            <a
+              href="https://docs.google.com/spreadsheets/d/14oJVSNd3xuRloR9DZR_7zfnjvMVrwWh6nltjvqap_h0/edit"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sheetLinkBtn"
+              title="Open Google Sheets in new tab to view live synced data"
+            >
+              <span className="sheetDot" />
+              <span>Google Sheets ↗</span>
+            </a>
+
             <button
               type="button"
               aria-label="Notifications"

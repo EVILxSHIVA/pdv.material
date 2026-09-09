@@ -1,6 +1,7 @@
-import Form from "@/components/forms/Form";
+import MaterialIssueForm from "@/components/forms/MaterialIssueForm";
 
 // Material Issue Form Page
 export default function MaterialIssuePage() {
-  return <Form kind="issue" title="Material Issue" />;
+  return <MaterialIssueForm />;
 }
+

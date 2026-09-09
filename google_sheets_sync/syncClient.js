@@ -221,3 +221,27 @@ export async function syncSingleToGoogleSheets({ sheetName, headers, rows, mode 
 
   return result;
 }
+
+let syncDebounceTimer = null;
+
+/**
+ * ⚡ Real-Time Auto-Sync Helper: Automatically triggers background cloud sync whenever any form updates.
+ */
+export function triggerAutoSyncToGoogleSheets(delayMs = 400) {
+  if (typeof window === "undefined") return;
+
+  if (syncDebounceTimer) {
+    clearTimeout(syncDebounceTimer);
+  }
+
+  syncDebounceTimer = setTimeout(async () => {
+    try {
+      console.log("[Auto-Sync] Initiating real-time sync to Google Sheets...");
+      await syncAllToGoogleSheets({ mode: "replace" });
+      console.log("[Auto-Sync] Cloud sync completed successfully.");
+    } catch (err) {
+      console.warn("[Auto-Sync Error]", err.message);
+    }
+  }, delayMs);
+}
+

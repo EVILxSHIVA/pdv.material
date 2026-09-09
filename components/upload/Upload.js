@@ -5,6 +5,7 @@ import Shell from "@/components/Shell";
 import { Title } from "@/components/ui/Title";
 import { Badge } from "@/components/ui/Badge";
 import { exportToExcel } from "@/lib/exportToExcel";
+import { triggerAutoSyncToGoogleSheets } from "@/google_sheets_sync/syncClient";
 import "@/components/ui/ui.css";
 import "./upload.css";
 
@@ -42,6 +43,8 @@ export default function Upload() {
   const saveBills = (newList) => {
     setBills(newList);
     localStorage.setItem(storageKey, JSON.stringify(newList));
+    // ⚡ Real-Time Auto-Upload to Google Sheets
+    triggerAutoSyncToGoogleSheets();
   };
 
   // 3. File select helper (Strictly validates PDF format and converts to base64)
