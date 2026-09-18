@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Shell from "@/components/Shell";
 import { Title } from "@/components/ui/Title";
 import { fields } from "@/data/fields";
-import { triggerAutoSyncToGoogleSheets } from "@/google_sheets_sync/syncClient";
 import History from "./History";
 import "@/components/ui/ui.css";
 import "./material-issue.css";
@@ -243,6 +242,15 @@ export default function MaterialIssueForm() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isCatalogModalOpen) {
+      lockScroll();
+    }
+    return () => {
+      if (isCatalogModalOpen) unlockScroll();
+    };
+  }, [isCatalogModalOpen]);
+
   // 3. Filtered Catalog for Quick Search Dropdown
   const searchResults = useMemo(() => {
     let list = materialCatalog;
@@ -328,7 +336,7 @@ export default function MaterialIssueForm() {
       const next = [name, ...filtered].slice(0, 6);
       try {
         localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(next));
-      } catch (e) {}
+      } catch (e) { }
       return next;
     });
   };
@@ -437,13 +445,10 @@ export default function MaterialIssueForm() {
       const updatedList = [newRecord, ...existingList];
       localStorage.setItem(storageKey, JSON.stringify(updatedList));
 
-      // ⚡ Real-Time Auto-Upload to Google Sheets
-      triggerAutoSyncToGoogleSheets();
-
       // Success notification
       setNotification({
         type: "success",
-        text: `✓ Issue Voucher ${recordNumber} saved & synced to Google Sheets with ${totalSelectedCount} materials (${totalUnitsCount} units)!`,
+        text: `✓ Issue Voucher ${recordNumber} saved successfully with ${totalSelectedCount} materials (${totalUnitsCount} units)!`,
       });
 
       // Reset form state
@@ -536,6 +541,18 @@ export default function MaterialIssueForm() {
             >
               <span>▦</span> Browse All Catalog ({materialCatalog.length})
             </button>
+
+            <button
+              type="button"
+              className="catalogBtn"
+              onClick={() => {
+                const el = document.getElementById("issue-history-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              title="Scroll down to view recent issue history records"
+            >
+              <span>📜</span> Issue History
+            </button>
           </div>
         </div>
 
@@ -545,7 +562,7 @@ export default function MaterialIssueForm() {
             <h2>
               <span>📋</span> Voucher & Destination Information
             </h2>
-            <span style={{ fontSize: "12px", color: "var(--muted)" }}>Step 1 of 2</span>
+            <span className="stepBadge active">Step 1 of 2</span>
           </div>
 
           <div className="voucherGrid">
@@ -560,7 +577,6 @@ export default function MaterialIssueForm() {
                 onChange={(e) =>
                   setVoucherDetails((p) => ({ ...p, challanNo: e.target.value }))
                 }
-                placeholder="e.g. MI-2041"
                 required
               />
             </div>
@@ -574,7 +590,6 @@ export default function MaterialIssueForm() {
                 onChange={(e) =>
                   setVoucherDetails((p) => ({ ...p, slNo: e.target.value }))
                 }
-                placeholder="e.g. V-102"
               />
             </div>
 
@@ -593,20 +608,34 @@ export default function MaterialIssueForm() {
               />
             </div>
 
-            {/* Material Issued To / Site / Party with smart autocomplete */}
+            {/* Issue / Return Type */}
             <div className="fieldGroup">
+              <label>Transaction Type</label>
+              <select
+                value={voucherDetails.issueType}
+                onChange={(e) =>
+                  setVoucherDetails((p) => ({ ...p, issueType: e.target.value }))
+                }
+              >
+                <option value="Issue">Issue (Outward)</option>
+                <option value="Return">Return (Inward)</option>
+              </select>
+            </div>
+
+            {/* Material Issued To / Site / Party with smart autocomplete (spans full width) */}
+            <div className="fieldGroup span4">
               <label>
-                Issued To / Site / Party <span className="req">*</span>
+                Issued To / Site / Party Destination <span className="req">*</span>
               </label>
               <input
                 type="text"
+                placeholder="Type or select site destination, party name, or contractor..."
                 value={voucherDetails.issuedTo}
                 onFocus={() => setShowPartySuggestions(true)}
                 onChange={(e) => {
                   setVoucherDetails((p) => ({ ...p, issuedTo: e.target.value }));
                   setShowPartySuggestions(true);
                 }}
-                placeholder="e.g. Vrindavan Site A / John Doe"
                 required
               />
               {showPartySuggestions && knownParties.length > 0 && (
@@ -630,20 +659,21 @@ export default function MaterialIssueForm() {
                     ))}
                 </ul>
               )}
-            </div>
 
-            {/* Issue / Return Type */}
-            <div className="fieldGroup">
-              <label>Transaction Type</label>
-              <select
-                value={voucherDetails.issueType}
-                onChange={(e) =>
-                  setVoucherDetails((p) => ({ ...p, issueType: e.target.value }))
-                }
-              >
-                <option value="Issue">Issue (Outward)</option>
-                <option value="Return">Return (Inward)</option>
-              </select>
+              {/* Quick Destination Presets */}
+              <div className="quickDestinationsWrap">
+                <span className="quickDestLabel">Quick Select:</span>
+                {["Central Warehouse", "Main Site Hub", "Vrindavan Site Phase 1", "Site Sector 4", "Direct Site Delivery"].map((dest) => (
+                  <button
+                    key={dest}
+                    type="button"
+                    className="quickDestTag"
+                    onClick={() => setVoucherDetails((p) => ({ ...p, issuedTo: dest }))}
+                  >
+                    + {dest}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -654,7 +684,7 @@ export default function MaterialIssueForm() {
             <h2>
               <span>🔍</span> Add Materials to Issue Voucher
             </h2>
-            <span style={{ fontSize: "12px", color: "var(--muted)" }}>Step 2 of 2</span>
+            <span className="stepBadge active">Step 2 of 2</span>
           </div>
 
           <div className="searchBarWrapper">
@@ -673,9 +703,37 @@ export default function MaterialIssueForm() {
               }}
               onKeyDown={handleSearchKeyDown}
             />
-            <div className="searchKeyHint">
-              <span>Ctrl</span> + <span>K</span>
-            </div>
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery("");
+                  setIsSearchOpen(false);
+                }}
+                style={{
+                  position: "absolute",
+                  right: "14px",
+                  background: "#f1f5f9",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "24px",
+                  height: "24px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "12px",
+                  color: "#64748b",
+                }}
+                title="Clear search"
+              >
+                ✕
+              </button>
+            ) : (
+              <div className="searchKeyHint">
+                <span>Ctrl</span> + <span>K</span>
+              </div>
+            )}
           </div>
 
           {/* Category Filter Pills */}
@@ -909,11 +967,13 @@ export default function MaterialIssueForm() {
         </div>
 
         {/* 6. Activity History Table */}
-        <History
-          kind="issue"
-          title="Material Issue History"
-          refreshTrigger={refreshHistoryTrigger}
-        />
+        <div id="issue-history-section" style={{ marginTop: "16px" }}>
+          <History
+            kind="issue"
+            title="Material Issue History"
+            refreshTrigger={refreshHistoryTrigger}
+          />
+        </div>
       </div>
 
       {/* 7. "Browse All Materials" Catalog Modal */}

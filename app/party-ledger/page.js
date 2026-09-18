@@ -1,16 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Shell from "@/components/Shell";
 import { Title } from "@/components/ui/Title";
 import { Badge } from "@/components/ui/Badge";
 import { exportToExcel } from "@/lib/exportToExcel";
 import { syncSingleToGoogleSheets, getWebhookUrl } from "@/google_sheets_sync/syncClient";
+import {
+  getStorageData,
+  setStorageData,
+  STORAGE_KEYS,
+  formatCurrency,
+  getTodayDate,
+} from "@/lib/dataService";
+import { lockScroll, unlockScroll } from "@/lib/scrollLock";
 import "@/components/ui/ui.css";
 import "./ledger.css";
 
+const INITIAL_NEEDED = {
+  partyName: "",
+  materialName: "",
+  quantityNeeded: "",
+  unit: "Pcs",
+  requiredByDate: "",
+  priority: "High",
+  remarks: "",
+};
+
+const INITIAL_PAYMENT = {
+  partyName: "",
+  invoiceNo: "",
+  invoiceDate: "",
+  totalAmount: "",
+  amountPaid: "",
+  paymentMode: "Bank Transfer (NEFT/RTGS)",
+  paymentDate: "",
+  status: "Pending",
+};
+
 export default function PartyLedgerPage() {
-  // 1. Data States
+  // Data States
   const [suppliers, setSuppliers] = useState([]);
   const [issues, setIssues] = useState([]);
   const [consumptions, setConsumptions] = useState([]);
@@ -19,81 +48,74 @@ export default function PartyLedgerPage() {
   const [syncStatus, setSyncStatus] = useState("");
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // 2. Selection & Tab States
+  // Selection & Tab States
   const [selectedParty, setSelectedParty] = useState("All Parties");
   const [activeTab, setActiveTab] = useState("needed"); // 'needed' | 'issued' | 'consumed' | 'payments'
-  
-  // 3. Modals State
+
+  // Modal States
   const [isNeededModalOpen, setIsNeededModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [newNeeded, setNewNeeded] = useState(INITIAL_NEEDED);
+  const [newPayment, setNewPayment] = useState(INITIAL_PAYMENT);
 
-  // Form states for adding Material Needed
-  const [newNeeded, setNewNeeded] = useState({
-    partyName: "",
-    materialName: "",
-    quantityNeeded: "",
-    unit: "Pcs",
-    requiredByDate: "",
-    priority: "High",
-    remarks: "",
-  });
-
-  // Form states for adding/updating Payments
-  const [newPayment, setNewPayment] = useState({
-    partyName: "",
-    invoiceNo: "",
-    invoiceDate: "",
-    totalAmount: "",
-    amountPaid: "",
-    paymentMode: "Bank Transfer (NEFT/RTGS)",
-    paymentDate: "",
-    status: "Pending",
-  });
-
-  // Load all local data on mount
+  // Load datasets on mount
   useEffect(() => {
-    const getStored = (key, fallback = []) => {
-      try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-      } catch (e) {
-        return fallback;
-      }
-    };
+    setSuppliers(getStorageData(STORAGE_KEYS.SUPPLIERS, []));
+    setIssues(getStorageData(STORAGE_KEYS.ISSUES, []));
+    setConsumptions(getStorageData(STORAGE_KEYS.CONSUMPTIONS, []));
 
-    const loadedSuppliers = getStored("pdv_app_suppliers", []);
-    const loadedIssues = getStored("pdv_app_issue", []);
-    const loadedConsumptions = getStored("pdv_app_consumption", []);
-    
-    // Load and filter out any legacy dummy sample records
-    let loadedNeeded = getStored("pdv_app_material_needed", []);
-    if (Array.isArray(loadedNeeded)) {
-      loadedNeeded = loadedNeeded.filter(
-        (n) => n && n.partyName !== "Apex Supplies" && n.partyName !== "Vrindavan Site A"
-      );
-      localStorage.setItem("pdv_app_material_needed", JSON.stringify(loadedNeeded));
+    // Filter legacy sample placeholders if any
+    const rawNeeded = getStorageData(STORAGE_KEYS.NEEDED, []);
+    const cleanNeeded = rawNeeded.filter(
+      (n) => n && n.partyName !== "Apex Supplies" && n.partyName !== "Vrindavan Site A"
+    );
+    setNeededList(cleanNeeded);
+    if (cleanNeeded.length !== rawNeeded.length) {
+      setStorageData(STORAGE_KEYS.NEEDED, cleanNeeded, false);
     }
 
-    let loadedPayments = getStored("pdv_app_party_payments", []);
-    if (Array.isArray(loadedPayments)) {
-      loadedPayments = loadedPayments.filter(
-        (p) => p && p.partyName !== "Apex Supplies" && p.partyName !== "Vrindavan Site A"
-      );
-      localStorage.setItem("pdv_app_party_payments", JSON.stringify(loadedPayments));
+    const rawPayments = getStorageData(STORAGE_KEYS.PAYMENTS, []);
+    const cleanPayments = rawPayments.filter(
+      (p) => p && p.partyName !== "Apex Supplies" && p.partyName !== "Vrindavan Site A"
+    );
+    setPaymentsList(cleanPayments);
+    if (cleanPayments.length !== rawPayments.length) {
+      setStorageData(STORAGE_KEYS.PAYMENTS, cleanPayments, false);
     }
-
-    setSuppliers(loadedSuppliers);
-    setIssues(loadedIssues);
-    setConsumptions(loadedConsumptions);
-    setNeededList(loadedNeeded);
-    setPaymentsList(loadedPayments);
   }, []);
 
-  // Sync helpers to Google Sheets
+  useEffect(() => {
+    if (isNeededModalOpen) {
+      lockScroll();
+    }
+    return () => {
+      if (isNeededModalOpen) unlockScroll();
+    };
+  }, [isNeededModalOpen]);
+
+  useEffect(() => {
+    if (isPaymentModalOpen) {
+      lockScroll();
+    }
+    return () => {
+      if (isPaymentModalOpen) unlockScroll();
+    };
+  }, [isPaymentModalOpen]);
+
+  // Sync to Google Sheets
   const syncNeededToSheets = async (list) => {
     if (!getWebhookUrl()) return;
     try {
-      const rows = list.map((n) => [n.partyName, n.materialName, n.quantityNeeded, n.unit, n.requiredByDate, n.priority, n.status, n.remarks]);
+      const rows = list.map((n) => [
+        n.partyName,
+        n.materialName,
+        n.quantityNeeded,
+        n.unit,
+        n.requiredByDate,
+        n.priority,
+        n.status,
+        n.remarks,
+      ]);
       await syncSingleToGoogleSheets({
         sheetName: "Material_Needed",
         headers: ["Party / Site", "Material Required", "Qty Needed", "Unit", "Required Date", "Priority", "Status", "Remarks"],
@@ -107,7 +129,17 @@ export default function PartyLedgerPage() {
   const syncPaymentsToSheets = async (list) => {
     if (!getWebhookUrl()) return;
     try {
-      const rows = list.map((p) => [p.partyName, p.invoiceNo, p.invoiceDate, p.totalAmount, p.amountPaid, p.balanceLeft, p.paymentMode, p.paymentDate, p.status]);
+      const rows = list.map((p) => [
+        p.partyName,
+        p.invoiceNo,
+        p.invoiceDate,
+        p.totalAmount,
+        p.amountPaid,
+        p.balanceLeft,
+        p.paymentMode,
+        p.paymentDate,
+        p.status,
+      ]);
       await syncSingleToGoogleSheets({
         sheetName: "Party_Payments",
         headers: ["Party / Vendor", "Invoice #", "Invoice Date", "Total Billed (₹)", "Amount Paid / Received (₹)", "Balance Due (₹)", "Payment Mode", "Payment Date", "Status"],
@@ -118,7 +150,6 @@ export default function PartyLedgerPage() {
     }
   };
 
-  // Sync entire active ledger to sheets
   const handleSyncCurrentTabToSheets = async () => {
     if (!getWebhookUrl()) {
       alert("Please configure your Google Sheets Webhook URL first on the Reports page.");
@@ -138,40 +169,50 @@ export default function PartyLedgerPage() {
     }
   };
 
-  // Extract unique parties (Suppliers, Sites from Issues, and Customers)
-  const uniqueParties = Array.from(
-    new Set([
-      ...suppliers.map((s) => s[1] || s.name || s[0]),
-      ...issues.map((i) => i.department),
-      ...consumptions.map((c) => c.department),
-      ...neededList.map((n) => n.partyName),
-      ...paymentsList.map((p) => p.partyName),
-    ])
-  ).filter(Boolean);
+  // Extract unique parties
+  const uniqueParties = useMemo(() => {
+    return Array.from(
+      new Set([
+        ...suppliers.map((s) => (Array.isArray(s) ? s[1] || s[0] : s.name || s.code)),
+        ...issues.map((i) => i.department || i.issuedTo),
+        ...consumptions.map((c) => c.department || c.site),
+        ...neededList.map((n) => n.partyName),
+        ...paymentsList.map((p) => p.partyName),
+      ])
+    ).filter(Boolean);
+  }, [suppliers, issues, consumptions, neededList, paymentsList]);
 
   // Filter datasets by selected party
-  const filteredNeeded = selectedParty === "All Parties"
-    ? neededList
-    : neededList.filter((n) => (n.partyName || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  const filteredNeeded = useMemo(() => {
+    return selectedParty === "All Parties"
+      ? neededList
+      : neededList.filter((n) => (n.partyName || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  }, [neededList, selectedParty]);
 
-  const filteredIssues = selectedParty === "All Parties"
-    ? issues
-    : issues.filter((i) => (i.department || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  const filteredIssues = useMemo(() => {
+    return selectedParty === "All Parties"
+      ? issues
+      : issues.filter((i) => (i.department || i.issuedTo || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  }, [issues, selectedParty]);
 
-  const filteredConsumptions = selectedParty === "All Parties"
-    ? consumptions
-    : consumptions.filter((c) => (c.department || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  const filteredConsumptions = useMemo(() => {
+    return selectedParty === "All Parties"
+      ? consumptions
+      : consumptions.filter((c) => (c.department || c.site || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  }, [consumptions, selectedParty]);
 
-  const filteredPayments = selectedParty === "All Parties"
-    ? paymentsList
-    : paymentsList.filter((p) => (p.partyName || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  const filteredPayments = useMemo(() => {
+    return selectedParty === "All Parties"
+      ? paymentsList
+      : paymentsList.filter((p) => (p.partyName || "").toLowerCase().includes(selectedParty.toLowerCase()));
+  }, [paymentsList, selectedParty]);
 
-  // Financial KPIs for Selected Party
-  const totalBilled = filteredPayments.reduce((acc, p) => acc + (Number(p.totalAmount) || 0), 0);
-  const totalReceived = filteredPayments.reduce((acc, p) => acc + (Number(p.amountPaid) || 0), 0);
-  const totalBalanceDue = totalBilled - totalReceived;
+  // Financial KPIs
+  const totalBilled = useMemo(() => filteredPayments.reduce((acc, p) => acc + (Number(p.totalAmount) || 0), 0), [filteredPayments]);
+  const totalReceived = useMemo(() => filteredPayments.reduce((acc, p) => acc + (Number(p.amountPaid) || 0), 0), [filteredPayments]);
+  const totalBalanceDue = Math.max(0, totalBilled - totalReceived);
 
-  // Save new material needed handler
+  // Save new material needed
   const handleSaveNeeded = (e) => {
     e.preventDefault();
     if (!newNeeded.partyName || !newNeeded.materialName || !newNeeded.quantityNeeded) {
@@ -193,13 +234,13 @@ export default function PartyLedgerPage() {
 
     const updated = [itemToAdd, ...neededList];
     setNeededList(updated);
-    localStorage.setItem("pdv_app_material_needed", JSON.stringify(updated));
+    setStorageData(STORAGE_KEYS.NEEDED, updated);
     syncNeededToSheets(updated);
     setIsNeededModalOpen(false);
-    setNewNeeded({ partyName: "", materialName: "", quantityNeeded: "", unit: "Pcs", requiredByDate: "", priority: "High", remarks: "" });
+    setNewNeeded(INITIAL_NEEDED);
   };
 
-  // Save new payment record handler
+  // Save new payment record
   const handleSavePayment = (e) => {
     e.preventDefault();
     const billed = Number(newPayment.totalAmount) || 0;
@@ -209,7 +250,7 @@ export default function PartyLedgerPage() {
 
     const record = {
       id: Date.now(),
-      partyName: newPayment.partyName || selectedParty || "Vendor",
+      partyName: newPayment.partyName || (selectedParty !== "All Parties" ? selectedParty : "Vendor"),
       invoiceNo: newPayment.invoiceNo || `INV-${Date.now().toString().slice(-4)}`,
       invoiceDate: newPayment.invoiceDate || new Date().toLocaleDateString("en-GB"),
       totalAmount: billed,
@@ -222,18 +263,18 @@ export default function PartyLedgerPage() {
 
     const updated = [record, ...paymentsList];
     setPaymentsList(updated);
-    localStorage.setItem("pdv_app_party_payments", JSON.stringify(updated));
+    setStorageData(STORAGE_KEYS.PAYMENTS, updated);
     syncPaymentsToSheets(updated);
     setIsPaymentModalOpen(false);
-    setNewPayment({ partyName: "", invoiceNo: "", invoiceDate: "", totalAmount: "", amountPaid: "", paymentMode: "Bank Transfer", paymentDate: "", status: "Pending" });
+    setNewPayment(INITIAL_PAYMENT);
   };
 
-  // Delete handlers
+  // Deletion handlers
   const handleDeleteNeeded = (id) => {
     if (confirm("Remove this requirement?")) {
       const updated = neededList.filter((n) => n.id !== id);
       setNeededList(updated);
-      localStorage.setItem("pdv_app_material_needed", JSON.stringify(updated));
+      setStorageData(STORAGE_KEYS.NEEDED, updated);
       syncNeededToSheets(updated);
     }
   };
@@ -242,7 +283,7 @@ export default function PartyLedgerPage() {
     if (confirm("Delete this payment entry?")) {
       const updated = paymentsList.filter((p) => p.id !== id);
       setPaymentsList(updated);
-      localStorage.setItem("pdv_app_party_payments", JSON.stringify(updated));
+      setStorageData(STORAGE_KEYS.PAYMENTS, updated);
       syncPaymentsToSheets(updated);
     }
   };
@@ -260,13 +301,13 @@ export default function PartyLedgerPage() {
       exportToExcel({
         filename,
         headers: ["Challan #", "Date", "Department / Party", "Items Count", "Status"],
-        rows: filteredIssues.map((i) => [i.number, i.date, i.department, i.itemsCount, i.status]),
+        rows: filteredIssues.map((i) => [i.number || i.challanNo, i.date, i.department || i.issuedTo, i.itemsCount, i.status]),
       });
     } else if (activeTab === "consumed") {
       exportToExcel({
         filename,
         headers: ["Consumption #", "Date", "Department / Party", "Items Count", "Status"],
-        rows: filteredConsumptions.map((c) => [c.number, c.date, c.department, c.itemsCount, c.status]),
+        rows: filteredConsumptions.map((c) => [c.number, c.date, c.department || c.site, c.itemsCount, c.status]),
       });
     } else {
       exportToExcel({
@@ -326,52 +367,57 @@ export default function PartyLedgerPage() {
           <div className="kpiGroup">
             <div className="kpiBox">
               <span className="kpiLabel">Total Invoiced</span>
-              <strong className="kpiVal">₹ {totalBilled.toLocaleString()}</strong>
+              <strong className="kpiVal">{formatCurrency(totalBilled)}</strong>
             </div>
             <div className="kpiBox success">
               <span className="kpiLabel">Amount Received</span>
-              <strong className="kpiVal">₹ {totalReceived.toLocaleString()}</strong>
+              <strong className="kpiVal">{formatCurrency(totalReceived)}</strong>
             </div>
             <div className="kpiBox danger">
               <span className="kpiLabel">Balance Outstanding</span>
-              <strong className="kpiVal">
-                ₹ {totalBalanceDue.toLocaleString()}
-              </strong>
+              <strong className="kpiVal">{formatCurrency(totalBalanceDue)}</strong>
             </div>
+          </div>
+        </div>
+
+        {/* Material Summary Position */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "8px", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid var(--border-default)" }}>
+          <div className="kpiBox">
+            <span className="kpiLabel">Material Requested</span>
+            <strong className="kpiVal">{filteredNeeded.reduce((a, n) => a + (Number(n.quantityNeeded) || 1), 0)} Units</strong>
+          </div>
+          <div className="kpiBox">
+            <span className="kpiLabel">Material Issued</span>
+            <strong className="kpiVal">{filteredIssues.reduce((a, i) => a + (Number(i.itemsCount) || 1), 0)} Items</strong>
+          </div>
+          <div className="kpiBox">
+            <span className="kpiLabel">Material Consumed</span>
+            <strong className="kpiVal">{filteredConsumptions.reduce((a, c) => a + (Number(c.itemsCount) || 1), 0)} Items</strong>
+          </div>
+          <div className="kpiBox" style={{ background: "var(--brand-50)", borderColor: "var(--brand-200)" }}>
+            <span className="kpiLabel">Active Requisitions</span>
+            <strong className="kpiVal" style={{ color: "var(--brand-700)" }}>{filteredNeeded.length} Pending</strong>
           </div>
         </div>
       </section>
 
       {/* 2. 4-Tab Navigation */}
       <div className="ledgerTabs">
-        <button
-          type="button"
-          className={`ledgerTab ${activeTab === "needed" ? "active" : ""}`}
-          onClick={() => setActiveTab("needed")}
-        >
-          Material Needed ({filteredNeeded.length})
-        </button>
-        <button
-          type="button"
-          className={`ledgerTab ${activeTab === "issued" ? "active" : ""}`}
-          onClick={() => setActiveTab("issued")}
-        >
-          Material Issued ({filteredIssues.length})
-        </button>
-        <button
-          type="button"
-          className={`ledgerTab ${activeTab === "consumed" ? "active" : ""}`}
-          onClick={() => setActiveTab("consumed")}
-        >
-          Material Consumed ({filteredConsumptions.length})
-        </button>
-        <button
-          type="button"
-          className={`ledgerTab ${activeTab === "payments" ? "active" : ""}`}
-          onClick={() => setActiveTab("payments")}
-        >
-          Payment Ledger ({filteredPayments.length})
-        </button>
+        {[
+          { id: "needed", label: `Material Needed (${filteredNeeded.length})` },
+          { id: "issued", label: `Material Issued (${filteredIssues.length})` },
+          { id: "consumed", label: `Material Consumed (${filteredConsumptions.length})` },
+          { id: "payments", label: `Payment Ledger (${filteredPayments.length})` },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={`ledgerTab ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* 3. Tab Contents */}
@@ -379,7 +425,7 @@ export default function PartyLedgerPage() {
         {/* Tab 1: Material Needed */}
         {activeTab === "needed" && (
           <>
-            <div className="tableScroll desktopTableView">
+            <div className="tableScroll">
               <table>
                 <thead>
                   <tr>
@@ -407,11 +453,11 @@ export default function PartyLedgerPage() {
                         <td><b>{n.quantityNeeded}</b> {n.unit}</td>
                         <td>{n.requiredByDate}</td>
                         <td>
-                          <span className={`priorityBadge ${n.priority.toLowerCase()}`}>{n.priority}</span>
+                          <span className={`priorityBadge ${(n.priority || "high").toLowerCase()}`}>{n.priority}</span>
                         </td>
                         <td><Badge>{n.status}</Badge></td>
                         <td>
-                          <button type="button" className="danger" onClick={() => handleDeleteNeeded(n.id)}>
+                          <button type="button" className="actionBtn delete" onClick={() => handleDeleteNeeded(n.id)}>
                             Delete
                           </button>
                         </td>
@@ -423,22 +469,46 @@ export default function PartyLedgerPage() {
             </div>
 
             {/* Mobile View */}
-            <div className="mobileRecordsView">
+            <div className="mobileCardList">
               {filteredNeeded.length === 0 ? (
-                <div className="emptyTable" style={{ padding: "28px 16px" }}>
-                  <p style={{ color: "var(--text-muted)", fontSize: "12.5px" }}>No material requirements recorded.</p>
+                <div className="emptyTable">
+                  <p>No material requirements recorded.</p>
                 </div>
               ) : (
                 filteredNeeded.map((n) => (
-                  <div key={n.id} className="mobileCardRow">
-                    <div className="mobileCardMain">
-                      <span className="mobileCardTitle">{n.materialName}</span>
-                      <span className="mobileCardSub">{n.partyName} · <b>{n.quantityNeeded} {n.unit}</b></span>
-                      <span className="mobileCardDate">Due: {n.requiredByDate}</span>
+                  <div key={n.id} className="mobileDataCard">
+                    <div className="mobileCardHeader">
+                      <div className="mobileCardTitleArea">
+                        <h3 className="mobileCardTitle">{n.materialName}</h3>
+                      </div>
+                      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                        <span className={`priorityBadge ${(n.priority || "high").toLowerCase()}`}>{n.priority}</span>
+                        <Badge>{n.status}</Badge>
+                      </div>
                     </div>
-                    <div className="mobileCardRight">
-                      <span className={`priorityBadge ${n.priority.toLowerCase()}`}>{n.priority}</span>
-                      <button type="button" className="danger" style={{ fontSize: "11px", padding: "2px 6px" }} onClick={() => handleDeleteNeeded(n.id)}>
+                    <div className="mobileCardBody">
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Party / Site</span>
+                        <strong className="mobileMetricVal">{n.partyName}</strong>
+                      </div>
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Quantity</span>
+                        <strong className="mobileMetricVal highlight">{n.quantityNeeded} {n.unit}</strong>
+                      </div>
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Required Date</span>
+                        <span className="mobileMetricVal" style={{ fontSize: "13.5px" }}>{n.requiredByDate || "—"}</span>
+                      </div>
+                    </div>
+                    <div className="mobileCardFooter">
+                      <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                        {n.remarks ? `Remarks: ${n.remarks}` : "Standard requisition"}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-danger"
+                        onClick={() => handleDeleteNeeded(n.id)}
+                      >
                         Delete
                       </button>
                     </div>
@@ -452,7 +522,7 @@ export default function PartyLedgerPage() {
         {/* Tab 2: Material Issued */}
         {activeTab === "issued" && (
           <>
-            <div className="tableScroll desktopTableView">
+            <div className="tableScroll">
               <table>
                 <thead>
                   <tr>
@@ -473,10 +543,10 @@ export default function PartyLedgerPage() {
                   ) : (
                     filteredIssues.map((i, idx) => (
                       <tr key={idx}>
-                        <td><strong>{i.number}</strong></td>
+                        <td><strong>{i.number || i.challanNo}</strong></td>
                         <td>{i.date}</td>
-                        <td>{i.department}</td>
-                        <td>{i.itemsCount} items</td>
+                        <td>{i.department || i.issuedTo}</td>
+                        <td>{i.itemsCount || (i.items ? i.items.length : 1)} items</td>
                         <td><Badge>{i.status || "Issued"}</Badge></td>
                       </tr>
                     ))
@@ -486,21 +556,30 @@ export default function PartyLedgerPage() {
             </div>
 
             {/* Mobile View */}
-            <div className="mobileRecordsView">
+            <div className="mobileCardList">
               {filteredIssues.length === 0 ? (
-                <div className="emptyTable" style={{ padding: "28px 16px" }}>
-                  <p style={{ color: "var(--text-muted)", fontSize: "12.5px" }}>No material issue records found.</p>
+                <div className="emptyTable">
+                  <p>No material issue records found.</p>
                 </div>
               ) : (
                 filteredIssues.map((i, idx) => (
-                  <div key={idx} className="mobileCardRow">
-                    <div className="mobileCardMain">
-                      <span className="mobileCardTitle">{i.number}</span>
-                      <span className="mobileCardSub">{i.department} · {i.itemsCount} items</span>
-                      <span className="mobileCardDate">{i.date}</span>
-                    </div>
-                    <div className="mobileCardRight">
+                  <div key={idx} className="mobileDataCard">
+                    <div className="mobileCardHeader">
+                      <div className="mobileCardTitleArea">
+                        <code className="codeBadge">{i.number || i.challanNo}</code>
+                        <h3 className="mobileCardTitle" style={{ marginTop: "4px" }}>{i.department || i.issuedTo}</h3>
+                      </div>
                       <Badge>{i.status || "Issued"}</Badge>
+                    </div>
+                    <div className="mobileCardBody">
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Dispatched</span>
+                        <strong className="mobileMetricVal highlight">{i.itemsCount || (i.items ? i.items.length : 1)} items</strong>
+                      </div>
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Issue Date</span>
+                        <span className="mobileMetricVal" style={{ fontSize: "13.5px" }}>{i.date}</span>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -512,7 +591,7 @@ export default function PartyLedgerPage() {
         {/* Tab 3: Material Consumed */}
         {activeTab === "consumed" && (
           <>
-            <div className="tableScroll desktopTableView">
+            <div className="tableScroll">
               <table>
                 <thead>
                   <tr>
@@ -535,8 +614,8 @@ export default function PartyLedgerPage() {
                       <tr key={idx}>
                         <td><strong>{c.number}</strong></td>
                         <td>{c.date}</td>
-                        <td>{c.department}</td>
-                        <td>{c.itemsCount} items</td>
+                        <td>{c.department || c.site}</td>
+                        <td>{c.itemsCount || (c.items ? c.items.length : 1)} items</td>
                         <td><Badge>{c.status || "Consumed"}</Badge></td>
                       </tr>
                     ))
@@ -546,21 +625,30 @@ export default function PartyLedgerPage() {
             </div>
 
             {/* Mobile View */}
-            <div className="mobileRecordsView">
+            <div className="mobileCardList">
               {filteredConsumptions.length === 0 ? (
-                <div className="emptyTable" style={{ padding: "28px 16px" }}>
-                  <p style={{ color: "var(--text-muted)", fontSize: "12.5px" }}>No consumption records found.</p>
+                <div className="emptyTable">
+                  <p>No consumption records found.</p>
                 </div>
               ) : (
                 filteredConsumptions.map((c, idx) => (
-                  <div key={idx} className="mobileCardRow">
-                    <div className="mobileCardMain">
-                      <span className="mobileCardTitle">{c.number}</span>
-                      <span className="mobileCardSub">{c.department} · {c.itemsCount} items</span>
-                      <span className="mobileCardDate">{c.date}</span>
-                    </div>
-                    <div className="mobileCardRight">
+                  <div key={idx} className="mobileDataCard">
+                    <div className="mobileCardHeader">
+                      <div className="mobileCardTitleArea">
+                        <code className="codeBadge">{c.number}</code>
+                        <h3 className="mobileCardTitle" style={{ marginTop: "4px" }}>{c.department || c.site}</h3>
+                      </div>
                       <Badge>{c.status || "Consumed"}</Badge>
+                    </div>
+                    <div className="mobileCardBody">
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Items Utilized</span>
+                        <strong className="mobileMetricVal highlight">{c.itemsCount || (c.items ? c.items.length : 1)} items</strong>
+                      </div>
+                      <div className="mobileMetricItem">
+                        <span className="mobileMetricLabel">Consumption Date</span>
+                        <span className="mobileMetricVal" style={{ fontSize: "13.5px" }}>{c.date}</span>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -572,7 +660,7 @@ export default function PartyLedgerPage() {
         {/* Tab 4: Payment Status & Ledger */}
         {activeTab === "payments" && (
           <>
-            <div className="tableScroll desktopTableView">
+            <div className="tableScroll">
               <table>
                 <thead>
                   <tr>
@@ -600,15 +688,15 @@ export default function PartyLedgerPage() {
                         <td><strong>{p.partyName}</strong></td>
                         <td>{p.invoiceNo}</td>
                         <td>{p.invoiceDate}</td>
-                        <td><b>₹ {Number(p.totalAmount).toLocaleString()}</b></td>
-                        <td style={{ color: "#059669", fontWeight: "700" }}>₹ {Number(p.amountPaid).toLocaleString()}</td>
-                        <td style={{ color: p.balanceLeft > 0 ? "#dc2626" : "#475569", fontWeight: "700" }}>
-                          ₹ {Number(p.balanceLeft).toLocaleString()}
+                        <td><b>{formatCurrency(p.totalAmount)}</b></td>
+                        <td style={{ color: "var(--green-text)", fontWeight: "700" }}>{formatCurrency(p.amountPaid)}</td>
+                        <td style={{ color: p.balanceLeft > 0 ? "var(--red-text)" : "var(--text-secondary)", fontWeight: "700" }}>
+                          {formatCurrency(p.balanceLeft)}
                         </td>
                         <td>{p.paymentMode}</td>
                         <td><Badge>{p.status}</Badge></td>
                         <td>
-                          <button type="button" className="danger" onClick={() => handleDeletePayment(p.id)}>
+                          <button type="button" className="actionBtn delete" onClick={() => handleDeletePayment(p.id)}>
                             Delete
                           </button>
                         </td>
@@ -620,27 +708,88 @@ export default function PartyLedgerPage() {
             </div>
 
             {/* Mobile View */}
-            <div className="mobileRecordsView">
+            <div className="mobileCardList">
               {filteredPayments.length === 0 ? (
-                <div className="emptyTable" style={{ padding: "28px 16px" }}>
-                  <p style={{ color: "var(--text-muted)", fontSize: "12.5px" }}>No payment entries recorded.</p>
+                <div className="emptyTable">
+                  <p>No payment entries recorded.</p>
                 </div>
               ) : (
-                filteredPayments.map((p) => (
-                  <div key={p.id} className="mobileCardRow">
-                    <div className="mobileCardMain">
-                      <span className="mobileCardTitle">{p.partyName}</span>
-                      <span className="mobileCardSub">{p.invoiceNo} · Billed: ₹ {Number(p.totalAmount).toLocaleString()}</span>
-                      <span className="mobileCardSub" style={{ color: "#059669" }}>Paid: ₹ {Number(p.amountPaid).toLocaleString()} · Due: ₹ {Number(p.balanceLeft).toLocaleString()}</span>
+                filteredPayments.map((p) => {
+                  const isDue = Number(p.balanceLeft) > 0;
+
+                  return (
+                    <div key={p.id} className="mobileDataCard ledgerPaymentCard">
+                      <div className="mobileCardHeader">
+                        <div className="mobileCardTitleArea">
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                            <code className="codeBadge">{p.invoiceNo || "INV-GEN"}</code>
+                            <span className="paymentModeBadge">{p.paymentMode || "NEFT"}</span>
+                          </div>
+                          <h3 className="mobileCardTitle">{p.partyName}</h3>
+                        </div>
+                        <Badge>{p.status}</Badge>
+                      </div>
+
+                      {/* Primary Financial Metric Strip */}
+                      <div className="ledgerFinancialStrip">
+                        <div className="ledgerBalanceCol">
+                          <span className="ledgerBalanceLabel">Balance Due</span>
+                          <strong className={`ledgerBalanceVal ${isDue ? "due" : "settled"}`}>
+                            {isDue ? formatCurrency(p.balanceLeft) : "✓ Cleared"}
+                          </strong>
+                        </div>
+                        <div className="ledgerPaidCol">
+                          <span className="ledgerBalanceLabel">Amount Paid</span>
+                          <strong className="ledgerPaidVal">
+                            {formatCurrency(p.amountPaid)}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Tap-to-Expand Transaction Details */}
+                      <details className="ledgerExpandable">
+                        <summary className="ledgerExpandSummary">
+                          <span>📋 Billing & Date Details</span>
+                          <span className="expandChevron">▾</span>
+                        </summary>
+                        <div className="ledgerExpandContent">
+                          <div className="ledgerDetailRow">
+                            <span className="detailLabel">Total Invoice Amount:</span>
+                            <span className="detailVal"><b>{formatCurrency(p.totalAmount)}</b></span>
+                          </div>
+                          <div className="ledgerDetailRow">
+                            <span className="detailLabel">Invoice Date:</span>
+                            <span className="detailVal">{p.invoiceDate || "—"}</span>
+                          </div>
+                          <div className="ledgerDetailRow">
+                            <span className="detailLabel">Settlement Mode:</span>
+                            <span className="detailVal">{p.paymentMode || "Standard Bank Transfer"}</span>
+                          </div>
+                          {p.remarks && (
+                            <div className="ledgerDetailRow">
+                              <span className="detailLabel">Remarks / Ref:</span>
+                              <span className="detailVal">{p.remarks}</span>
+                            </div>
+                          )}
+                        </div>
+                      </details>
+
+                      <div className="mobileCardFooter">
+                        <span style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
+                          {p.invoiceDate ? `Issued: ${p.invoiceDate}` : "Active ledger entry"}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger ledgerDeleteBtn"
+                          onClick={() => handleDeletePayment(p.id)}
+                          aria-label="Delete entry"
+                        >
+                          ✕ Delete
+                        </button>
+                      </div>
                     </div>
-                    <div className="mobileCardRight">
-                      <Badge>{p.status}</Badge>
-                      <button type="button" className="danger" style={{ fontSize: "11px", padding: "2px 6px" }} onClick={() => handleDeletePayment(p.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </>
@@ -652,58 +801,52 @@ export default function PartyLedgerPage() {
         <div className="modalBackdrop" onClick={() => setIsNeededModalOpen(false)}>
           <div className="modalContent" onClick={(e) => e.stopPropagation()}>
             <div className="modalHeader">
-              <div>
-                <h3>Request Material</h3>
-              </div>
+              <h3>Request Material</h3>
               <button type="button" className="modalCloseBtn" onClick={() => setIsNeededModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleSaveNeeded}>
-              <div className="modalBody gridBody">
-                <div className="formField">
+              <div className="modalBody formGrid">
+                <div>
                   <label>Supplier / Customer / Site Name *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Apex Supplies or Site Vrindavan"
                     value={newNeeded.partyName}
                     onChange={(e) => setNewNeeded({ ...newNeeded, partyName: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Material Specification *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. GI Pipe 1/2 inch or NG Kit"
                     value={newNeeded.materialName}
                     onChange={(e) => setNewNeeded({ ...newNeeded, materialName: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Quantity Needed *</label>
                   <input
                     type="number"
                     required
                     min="1"
-                    placeholder="e.g. 50"
                     value={newNeeded.quantityNeeded}
                     onChange={(e) => setNewNeeded({ ...newNeeded, quantityNeeded: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Unit</label>
                   <input
                     type="text"
-                    placeholder="Pcs, Mtr, Box, Kg"
                     value={newNeeded.unit}
                     onChange={(e) => setNewNeeded({ ...newNeeded, unit: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Required By Date</label>
                   <input
                     type="date"
@@ -712,7 +855,7 @@ export default function PartyLedgerPage() {
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Priority</label>
                   <select
                     value={newNeeded.priority}
@@ -740,60 +883,54 @@ export default function PartyLedgerPage() {
         <div className="modalBackdrop" onClick={() => setIsPaymentModalOpen(false)}>
           <div className="modalContent" onClick={(e) => e.stopPropagation()}>
             <div className="modalHeader">
-              <div>
-                <h3>Record Payment</h3>
-              </div>
+              <h3>Record Payment</h3>
               <button type="button" className="modalCloseBtn" onClick={() => setIsPaymentModalOpen(false)}>✕</button>
             </div>
             <form onSubmit={handleSavePayment}>
-              <div className="modalBody gridBody">
-                <div className="formField">
-                  <label>Party / Vendor / Customer *</label>
+              <div className="modalBody formGrid">
+                <div>
+                  <label>Party / Supplier / Customer *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Apex Supplies"
                     value={newPayment.partyName}
                     onChange={(e) => setNewPayment({ ...newPayment, partyName: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Invoice / Bill Number *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. INV-2026-101"
                     value={newPayment.invoiceNo}
                     onChange={(e) => setNewPayment({ ...newPayment, invoiceNo: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Total Invoiced / Bill Amount (₹) *</label>
                   <input
                     type="number"
                     required
                     min="0"
-                    placeholder="e.g. 100000"
                     value={newPayment.totalAmount}
                     onChange={(e) => setNewPayment({ ...newPayment, totalAmount: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Amount Received / Paid (₹) *</label>
                   <input
                     type="number"
                     required
                     min="0"
-                    placeholder="e.g. 60000"
                     value={newPayment.amountPaid}
                     onChange={(e) => setNewPayment({ ...newPayment, amountPaid: e.target.value })}
                   />
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Payment Mode</label>
                   <select
                     value={newPayment.paymentMode}
@@ -806,7 +943,7 @@ export default function PartyLedgerPage() {
                   </select>
                 </div>
 
-                <div className="formField">
+                <div>
                   <label>Payment Date</label>
                   <input
                     type="date"
@@ -818,7 +955,7 @@ export default function PartyLedgerPage() {
 
               <div className="modalFooter">
                 <button type="button" className="secondary" onClick={() => setIsPaymentModalOpen(false)}>Cancel</button>
-                <button type="submit" className="primary" style={{ background: "#059669", borderColor: "#059669" }}>
+                <button type="submit" className="primary">
                   Save Payment Record
                 </button>
               </div>

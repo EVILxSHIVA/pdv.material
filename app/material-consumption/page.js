@@ -1,6 +1,10 @@
-import Form from "@/components/forms/Form";
+import ConsumptionForm from "@/components/forms/ConsumptionForm";
 
-// Material Consumption Form Page
+export const metadata = {
+  title: "Material Consumption | PDV Material",
+  description: "Record and track actual material usage and site balance",
+};
+
 export default function ConsumptionPage() {
-  return <Form kind="consumption" title="Material Consumption" />;
+  return <ConsumptionForm />;
 }

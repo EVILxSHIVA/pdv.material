@@ -1,0 +1,787 @@
+/* ==========================================================================
+   PDV Material Management - Supplier Workspace Styles
+   ========================================================================== */
+
+.supplierBanner {
+  background: white;
+  color: #0f172a;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
+  border: 1px solid var(--border-default, #e2e8f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.supplierBannerLeft h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: #0f172a;
+  margin: 0;
+}
+
+.supplierBannerLeft p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 4px 0 0;
+}
+
+.supplierMetaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  color: #334155;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+}
+
+/* Sheet Sync Compact Card */
+.sheetSyncCard {
+  background: white;
+  border: 1px solid var(--border-default, #e2e8f0);
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.sheetSyncTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheetSyncTitleRow h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.sheetSyncLeft p {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 3px 0 0;
+}
+
+.sheetStatusPill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.sheetStatusPill.connected {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.sheetStatusPill.pending {
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.sheetSyncActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sheetEditForm {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 18px;
+}
+
+/* Metric Cards */
+.supplierMetricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.supplierMetricCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+}
+
+.supplierMetricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.supplierMetricLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.supplierMetricIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+.supplierMetricValue {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.supplierMetricSubtext {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Section Header */
+.sectionHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Supplier Tables */
+.supplierTableWrapper {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow-x: auto;
+}
+
+.supplierTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.supplierTable th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.supplierTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.supplierTable tr:last-child td {
+  border-bottom: none;
+}
+
+.supplierTable tr:hover td {
+  background: #f8fafc;
+}
+
+/* Supplier Profile Info Grid */
+.profileInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.profileCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-xs);
+}
+
+.profileCardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profileFieldRow {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.profileFieldLabel {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 3px;
+}
+
+.profileFieldValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Order Drawer / View Modal */
+.orderDetailDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 500px;
+  max-width: 100%;
+  background: #ffffff;
+  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawerHeader {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawerBody {
+  padding: 24px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  flex: 1;
+}
+
+.drawerCloseBtn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+/* Place Order Modal Styles */
+.orderModalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.orderModalContainer {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.orderModalContainer > form,
+.orderModalForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.modalHeader {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modalBody {
+  padding: 20px 24px;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+.modalBody::-webkit-scrollbar {
+  width: 6px;
+}
+.modalBody::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+.modalBody::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.modalBody::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.modalFooter {
+  padding: 14px 24px;
+  border-top: 1px solid var(--border-default);
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.formRowGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--text-primary);
+  transition: border-color 0.15s ease;
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--brand-500);
+}
+
+.lineItemsTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 6px;
+  border: 1px solid var(--border-default);
+}
+
+.lineItemsTable {
+  width: 100%;
+  min-width: 580px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-top: 0;
+}
+
+.lineItemsTable th {
+  background: #f1f5f9;
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.lineItemsTable td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-default);
+  vertical-align: middle;
+}
+
+.unitBadge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.lockedRateBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  user-select: none;
+}
+
+.lockedRateBox .lockIcon {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.lockedRateText {
+  font-family: monospace;
+  color: #0f172a;
+}
+
+.lineItemSelect {
+  width: 100%;
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.quantityInput {
+  width: 100%;
+  font-size: 12px;
+  padding: 5px 8px;
+  font-weight: 600;
+}
+
+.lineItemRemoveBtn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.lineItemRemoveBtn:hover {
+  background: #fee2e2;
+}
+
+/* Fixed price banner in supplier order modal */
+.fixedPriceNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.fixedPriceNoticeIcon {
+  font-size: 18px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.fixedPriceNoticeTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e40af;
+  margin-bottom: 2px;
+}
+
+.fixedPriceNoticeDesc {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #1e3a8a;
+}
+
+.mobileLineItemsList {
+  display: none;
+}
+
+.desktopOnlyTable {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .desktopOnlyTable {
+    display: none !important;
+  }
+
+  .mobileLineItemsList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mobileLineItemCard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .mobileLineItemCardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .mobileLineItemIndexBadge {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 18px;
+    flex-shrink: 0;
+  }
+
+  .mobileLineItemTitleWrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobileLineItemFieldLabel {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+
+  .mobileSelectInput {
+    width: 100%;
+    font-size: 14px;
+    min-height: 42px;
+    padding: 6px 10px;
+  }
+
+  .mobileLineItemDeleteBtn {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-top: 16px;
+    flex-shrink: 0;
+  }
+
+  .mobileLineItemCardBody {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .mobileQtyInputWrap {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+
+  .mobileQtyInput {
+    border: none !important;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 8px 10px;
+    width: 100%;
+    min-height: 40px;
+    box-shadow: none !important;
+  }
+
+  .mobileUnitTag {
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    background: #f1f5f9;
+    border-left: 1px solid #e2e8f0;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+
+  .mobileLockedRate {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    justify-content: flex-start;
+    font-size: 13px;
+    background: #f1f5f9;
+  }
+
+  .mobileLineItemCardFooter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px dashed #cbd5e1;
+  }
+
+  .mobileItemSubtotalLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+  }
+
+  .mobileItemSubtotalVal {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--brand-700);
+  }
+
+  .supplierBanner {
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .supplierBannerLeft h1 {
+    font-size: 18px;
+  }
+
+  .supplierMetricsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .supplierMetricCard {
+    padding: 12px 10px;
+  }
+
+  .supplierMetricValue {
+    font-size: 20px;
+  }
+
+  .orderDetailDrawer {
+    width: 100%;
+  }
+
+  .orderModalContainer {
+    width: 100%;
+    max-height: 95vh;
+    margin: 8px;
+  }
+
+  .sectionHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .sectionHeaderRow .btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+

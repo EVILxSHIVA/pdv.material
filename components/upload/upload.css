@@ -1,154 +1,113 @@
-.upload {
-    max-width: 760px;
+.docTypeButtonGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.billSuccessBanner {
-    padding: 14px 20px;
-    background: #ecfdf5;
-    border: 1px solid #6ee7b7;
-    border-radius: 8px;
-    color: #065f46;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 20px;
+.docTypeBtn {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-/* Document Type Selector (Tax Invoice vs Proforma Invoice) */
-.billTypeSelector {
-    padding: 14px 18px;
-    background: #f8fafc;
-    border: 1px solid var(--line);
-    border-radius: 10px;
+.docTypeBtn:hover {
+  background: #ffffff;
+  border-color: var(--border-strong);
 }
 
-.typeSelectorLabel {
-    display: block;
-    font-size: 12px;
-    font-weight: 700;
-    color: #344054;
-    margin-bottom: 10px;
+.docTypeBtn.active {
+  background: var(--brand-50);
+  border-color: var(--brand-500);
+  color: var(--brand-700);
 }
 
-.typeButtonGroup {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+.docDropzone {
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+  background: var(--surface-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.typeButton {
-    flex: 1;
-    min-height: 44px;
-    padding: 10px 16px;
-    border: 2px solid #d9dfe9;
-    border-radius: 8px;
-    background: white;
-    font-size: 14px;
-    font-weight: 600;
-    color: #344054;
-    cursor: pointer;
-    transition: all 0.15s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+.dropIcon {
+  font-size: 28px;
+  color: var(--brand-500);
 }
 
-.typeButton:hover {
-    border-color: #a5b4fc;
-    background: #fafaff;
-}
-
-.typeButton.selected {
-    border-color: #4f46e5;
-    background: #eef2ff;
-    color: #4338ca;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-}
-
-.dropzone {
-    border: 2px dashed #c7d2fe;
-    border-radius: 11px;
-    background: #fafaff;
-    min-height: 200px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    gap: 8px;
-    padding: 24px 20px;
-}
-
-.dropzone h2 {
-    font-size: 15px;
-}
-
-.dropzone p,
-.dropzone small {
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.dropzone small {
-    margin-top: 6px;
-}
-
-.uploadIcon {
-    width: 44px;
-    height: 44px;
-    background: #e0e7ff;
-    color: #4f46e5;
-    border-radius: 10px;
-    font-size: 22px;
-    display: grid;
-    place-items: center;
-}
-
-.fileRow {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    padding: 14px 16px;
-    background: #f8fafc;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-}
-
-.fileRow>span {
-    font-size: 22px;
-    color: #4f46e5;
-}
-
-.fileRow div {
-    flex: 1;
-}
-
-.fileRow b,
-.fileRow small {
-    display: block;
-    font-size: 13px;
-}
-
-.fileRow small {
-    color: var(--muted);
-    margin-top: 4px;
+.filePill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  margin-top: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
 .fileDownloadLink {
-    color: #4f46e5;
-    font-weight: 600;
-    font-size: 13px;
-    text-decoration: underline;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+  color: var(--brand-600);
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .fileDownloadLink:hover {
-    color: #3730a3;
+  text-decoration: underline;
 }
 
-.fileDownloadLink small {
-    color: var(--muted);
-    font-weight: normal;
+.billSuccessBanner {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green-text);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .docTypeButtonGroup {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .docTypeBtn {
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .docDropzone {
+    padding: 20px 14px;
+  }
+
+  .docDropzone .btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .filePill {
+    width: 100%;
+    justify-content: space-between;
+    font-size: 12px;
+  }
 }

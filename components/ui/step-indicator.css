@@ -1,0 +1,100 @@
+.stepperWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  margin-bottom: 22px;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  position: relative;
+}
+
+.stepItem.clickable {
+  cursor: pointer;
+}
+
+.stepBadge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.stepItem.current .stepBadge {
+  background: var(--brand-500);
+  border-color: var(--brand-500);
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(23, 107, 82, 0.25);
+}
+
+.stepItem.completed .stepBadge {
+  background: var(--green-bg);
+  border-color: var(--green-border);
+  color: var(--green-text);
+  font-weight: 800;
+}
+
+.stepMeta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.stepNumLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.stepTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.stepItem.current .stepTitle {
+  color: var(--brand-600);
+  font-weight: 700;
+}
+
+.stepConnector {
+  flex: 1;
+  height: 2px;
+  background: var(--border-default);
+  margin-left: 12px;
+}
+
+.stepItem.completed .stepConnector {
+  background: var(--green-dot);
+}
+
+@media (max-width: 768px) {
+  .stepMeta {
+    display: none;
+  }
+  .stepperWrapper {
+    padding: 10px 14px;
+  }
+}

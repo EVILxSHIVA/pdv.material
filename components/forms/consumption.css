@@ -1,0 +1,173 @@
+/* ==========================================================================
+   Material Consumption Form - Connected to Dispatched Voucher
+   Visually Dominant Quantity Breakdown & Touch Stepper
+   ========================================================================== */
+
+.consumptionTable th,
+.consumptionTable td {
+  padding: 12px 14px !important;
+}
+
+.consumptionSuccessBanner {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green-text);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* ==========================================================================
+   Mobile Consumption Card System (Zero horizontal scroll <= 768px)
+   ========================================================================== */
+.mobileConsumeList {
+  display: none;
+}
+
+.consumeItemCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-xs);
+  transition: border-color 0.15s ease;
+}
+
+.consumeItemCard.overdraft {
+  border-color: var(--red-border);
+  background: #fffafa;
+}
+
+.consumeCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.consumeCardTitle {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+/* Visually Dominant Quantity Breakdown */
+.consumeMetricRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.consumeMetricCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.consumeMetricLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.consumeMetricVal {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.consumeInputRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+
+.consumeInputLabel {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.consumeStepperControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepperBtn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s ease;
+  color: var(--text-primary);
+}
+
+.stepperBtn:hover {
+  background: var(--surface-alt);
+  border-color: var(--border-strong);
+}
+
+.stepperBtn:active {
+  transform: scale(0.96);
+}
+
+.stepperInput {
+  width: 72px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px !important;
+  padding: 0 4px !important;
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 768px) {
+  .mobileConsumeList {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 14px;
+  }
+
+  .stepperBtn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .stepperInput {
+    height: 44px !important;
+    min-height: 44px !important;
+  }
+}

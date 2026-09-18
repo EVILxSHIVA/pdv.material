@@ -1,116 +1,544 @@
-.quickGrid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 12px;
+/* ==========================================================================
+   Dashboard Design - Operations & Material Control Center
+   Prioritized for "What Needs Attention Now?"
+   ========================================================================== */
+
+.dashHeaderSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.quick {
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    min-height: 106px;
-    padding: 14px;
-    display: flex;
+.dashGreeting {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.dashGreetingSub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.dashQuickActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dashActionBtn:hover {
+  background: var(--surface-alt);
+  color: var(--primary-forest);
+  border-color: var(--border-strong);
+}
+
+.dashActionBtn.primary {
+  background: var(--primary-forest);
+  border-color: var(--forest-deep);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 77, 60, 0.25);
+}
+
+.dashActionBtn.primary:hover {
+  background: var(--forest-deep);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Operational KPI Strip
+   ========================================================================== */
+.dashKpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.dashKpiCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.dashKpiCard:hover {
+  border-color: var(--border-strong);
+}
+
+.dashKpiCard.warningBorder {
+  border-color: var(--red-border);
+  background: #fffafa;
+}
+
+.dashKpiCard.amberBorder {
+  border-color: var(--amber-border);
+  background: #fffdf7;
+}
+
+.dashKpiTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashKpiLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dashKpiIcon {
+  font-size: 16px;
+}
+
+.dashKpiValue {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 8px 0 4px;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.dashKpiValue.textAmber {
+  color: var(--amber-primary);
+}
+
+.dashKpiValue.textRed {
+  color: var(--red-dot);
+}
+
+.dashKpiHint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.dashKpiLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-forest);
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.dashKpiLink:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   "Needs Attention" Operational Alert Section
+   ========================================================================== */
+.attentionCard {
+  border-left: 4px solid var(--red-dot);
+  background: #fffbfb;
+  margin-bottom: 22px;
+}
+
+.attentionHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.attentionBadge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  background: var(--red-bg);
+  color: var(--red-text);
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--red-border);
+}
+
+.attentionCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.attentionItemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attentionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
+}
+
+.attentionRow:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-xs);
+}
+
+.attentionRowLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.attentionDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.attentionDot.red {
+  background: var(--red-dot);
+}
+
+.attentionDot.amber {
+  background: var(--amber-dot);
+}
+
+.attentionDot.yellow {
+  background: #f59e0b;
+}
+
+.attentionRowLeft strong {
+  font-size: 13.5px;
+  color: var(--text-primary);
+  display: block;
+}
+
+.attentionSub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.attentionActionBtn {
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Material Movement Pipeline
+   ========================================================================== */
+.movementCard {
+  margin-bottom: 22px;
+}
+
+.movementPipelineGrid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 4px;
+  overflow-x: auto;
+}
+
+.pipelineStage {
+  flex: 1;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+}
+
+.pipelineStage.highlight {
+  background: var(--forest-light);
+  border-color: var(--green-border);
+}
+
+.pipelineStageName {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pipelineVal {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 6px 0 2px;
+}
+
+.pipelineStage.highlight .pipelineVal {
+  color: var(--forest-dark);
+}
+
+.pipelineUnit {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.pipelineArrow {
+  font-size: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Split Layout: Activity Stream & Operations Hub
+   ========================================================================== */
+.dashSplitGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.12s ease;
+}
+
+.activityItem:hover {
+  background: var(--surface-subtle);
+}
+
+.activityItem:last-child {
+  border-bottom: 0;
+}
+
+.activityIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-alt);
+  color: var(--primary-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.activityInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.activityTitle {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activitySubtitle {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activityRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.activityDate {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.opsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.opsCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  min-height: 52px;
+}
+
+.opsCard:hover {
+  background: #ffffff;
+  border-color: var(--primary-forest);
+  box-shadow: var(--shadow-xs);
+  transform: translateY(-1px);
+}
+
+.opsIcon {
+  font-size: 18px;
+  color: var(--primary-forest);
+  flex-shrink: 0;
+}
+
+.opsCard b {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.opsCard small {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Mobile Responsive Rules (320px - 640px)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .dashSplitGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashHeaderSection {
     flex-direction: column;
-    gap: 16px;
-    font-size: 12px;
-    font-weight: 600;
-    transition: border-color 0.15s, background-color 0.15s, transform 0.1s;
-}
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
 
-.quick:hover {
-    border-color: #a5b4fc;
-    background: #fafaff;
-    transform: translateY(-1px);
-}
+  .dashGreeting {
+    font-size: 20px;
+  }
 
-.quick i {
-    background: #eef2ff;
-    color: #4f46e5;
-    border-radius: 7px;
-    width: 30px;
-    height: 30px;
+  .dashQuickActions {
     display: grid;
-    place-items: center;
-    font-style: normal;
-    font-size: 17px;
-}
-
-.textLink {
-    color: #4f46e5;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.tableCard {
-    padding: 0;
-}
-
-.tableCard>.toolbar,
-.tableCard>.sectionHead {
-    padding: 20px 22px;
-    margin: 0;
-}
-
-.tableScroll {
-    overflow: auto;
-}
-
-.tableScroll table {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
     width: 100%;
-    border-collapse: collapse;
-    min-width: 760px;
-}
+  }
 
-.tableScroll th {
-    text-align: left;
-    color: #667085;
-    font-size: 11px;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    background: #fafbfc;
-    padding: 13px 22px;
-    white-space: nowrap;
-}
-
-.tableScroll td {
-    padding: 15px 22px;
-    border-top: 1px solid var(--line);
+  .dashActionBtn {
+    min-height: 44px;
+    justify-content: center;
     font-size: 13px;
-    white-space: nowrap;
-}
+    padding: 0 10px;
+  }
 
-.tableScroll tbody tr:hover {
-    background: #fbfcfe;
-}
+  .dashKpiGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
 
-@media(max-width:1100px) {
-    .quickGrid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
+  .dashKpiCard {
+    padding: 14px 12px;
+  }
 
-@media(max-width:767px) {
-    .quickGrid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .dashKpiValue {
+    font-size: 22px;
+    margin: 6px 0 2px;
+  }
 
-    .quick {
-        min-height: 88px;
-        padding: 12px;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-    }
+  .attentionRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+  }
 
-    .tableCard {
-        padding: 0;
-    }
+  .attentionActionBtn {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13.5px;
+  }
 
-    .tableCard>.sectionHead {
-        padding: 16px;
-    }
+  .movementPipelineGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    overflow-x: visible;
+  }
 
-    .tableScroll {
-        margin: 0;
-    }
+  .pipelineStage {
+    min-width: 0;
+    padding: 10px 12px;
+  }
+
+  .pipelineVal {
+    font-size: 18px;
+    margin: 4px 0 2px;
+  }
+
+  .pipelineArrow {
+    display: none;
+  }
+
+  .opsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .opsCard {
+    min-height: 46px;
+  }
 }

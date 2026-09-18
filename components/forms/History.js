@@ -13,7 +13,6 @@ export default function History({ kind, title, refreshTrigger }) {
   const [historyList, setHistoryList] = useState([]);
 
   const historyHeaders = [
-    "Number",
     "Date",
     "Department / Site",
     "Items Count",
@@ -42,7 +41,6 @@ export default function History({ kind, title, refreshTrigger }) {
   // Export history to Excel
   const handleExportHistory = () => {
     const formattedRows = historyList.map((entry) => [
-      entry.number,
       entry.date,
       entry.department,
       entry.itemsCount,
@@ -61,7 +59,7 @@ export default function History({ kind, title, refreshTrigger }) {
       <div className="sectionHead">
         <div>
           <h2>{title}</h2>
-          <p>Recent recorded activity entered by you</p>
+          <p>Real-time log of recent vouchers saved in your local workspace.</p>
         </div>
 
         {historyList.length > 0 && (
@@ -73,6 +71,33 @@ export default function History({ kind, title, refreshTrigger }) {
           >
             ⤓ Export History
           </button>
+        )}
+      </div>
+
+      {/* Mobile-first compact cards (hidden on desktop) */}
+      <div className="mobileCardList">
+        {historyList.length === 0 ? (
+          <div className="emptyTable">
+            <p>No {title.toLowerCase()} recorded yet.</p>
+          </div>
+        ) : (
+          historyList.map((entry, index) => (
+            <div key={index} className="mobileDataCard">
+              <div className="mobileCardHeader">
+                <div className="mobileCardTitleArea">
+                  <h3 className="mobileCardTitle">{entry.department}</h3>
+                  <small style={{ color: "var(--text-muted)", fontSize: "12px" }}>{entry.date}</small>
+                </div>
+                <Badge>{entry.status || "Completed"}</Badge>
+              </div>
+              <div className="mobileCardBody">
+                <div className="mobileMetricItem">
+                  <span className="mobileMetricLabel">Items Count</span>
+                  <strong className="mobileMetricVal highlight">{entry.itemsCount}</strong>
+                </div>
+              </div>
+            </div>
+          ))
         )}
       </div>
 
@@ -89,7 +114,7 @@ export default function History({ kind, title, refreshTrigger }) {
           <tbody>
             {historyList.length === 0 ? (
               <tr>
-                <td colSpan={5} className="emptyTable">
+                <td colSpan={4} className="emptyTable">
                   <div className="emptyState">
                     <span>📋</span>
                     <p>No {title.toLowerCase()} recorded yet.</p>
@@ -103,11 +128,10 @@ export default function History({ kind, title, refreshTrigger }) {
               historyList.map((entry, index) => (
                 <tr key={index}>
                   <td>
-                    <strong>{entry.number}</strong>
+                    <strong style={{ color: "var(--text-primary)" }}>{entry.date}</strong>
                   </td>
-                  <td>{entry.date}</td>
                   <td>{entry.department}</td>
-                  <td>{entry.itemsCount}</td>
+                  <td>{entry.itemsCount} {Number(entry.itemsCount) === 1 ? "item" : "items"}</td>
                   <td>
                     <Badge>{entry.status || "Completed"}</Badge>
                   </td>

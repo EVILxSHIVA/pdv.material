@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Shell from "@/components/Shell";
 import { Title } from "@/components/ui/Title";
 import { fields } from "@/data/fields";
-import { triggerAutoSyncToGoogleSheets } from "@/google_sheets_sync/syncClient";
 import History from "./History";
 import "@/components/ui/ui.css";
 import "./forms.css";
@@ -75,10 +74,7 @@ export default function Form({ kind, title }) {
       const existing = JSON.parse(localStorage.getItem("pdv_app_purchases") || "[]");
       localStorage.setItem("pdv_app_purchases", JSON.stringify([newPurchase, ...existing]));
 
-      // ⚡ Real-Time Auto-Upload to Google Sheets
-      triggerAutoSyncToGoogleSheets();
-
-      setMessage(`✓ Purchase ${invNumber} saved and synced to Google Sheets! Redirecting...`);
+      setMessage(`✓ Purchase ${invNumber} saved successfully! Redirecting...`);
       setTimeout(() => router.push("/purchases"), 1000);
     } else {
       const recordNumber =
@@ -99,10 +95,7 @@ export default function Form({ kind, title }) {
       const existing = JSON.parse(localStorage.getItem(key) || "[]");
       localStorage.setItem(key, JSON.stringify([newRecord, ...existing]));
 
-      // ⚡ Real-Time Auto-Upload to Google Sheets
-      triggerAutoSyncToGoogleSheets();
-
-      setMessage(`✓ Record ${recordNumber} saved & synced to Google Sheets with ${filledCount} material quantities!`);
+      setMessage(`✓ Record ${recordNumber} saved with ${filledCount} material quantities!`);
       setReloadKey((prev) => prev + 1);
       setFieldValues({});
       setMaterialQuantities({});

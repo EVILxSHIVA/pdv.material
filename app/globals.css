@@ -1,30 +1,185 @@
-:root { --navy:#172554; --indigo:#4f46e5; --ink:#172033; --muted:#667085; --line:#e7eaf0; --bg:#f6f7fb; --card:#fff; --green:#087443; --amber:#9a6700; --red:#c63535; }
+:root {
+  /* ==========================================================================
+     PDV Material Management Design System
+     Primary Visual Direction: FOREST GREEN + AMBER ACCENT
+     ========================================================================== */
+
+  /* Primary / Forest System */
+  --primary-forest: #176b52;
+  --forest-deep: #0f4d3c;
+  --forest-dark: #0b3d30;
+  --forest-light: #e8f4ef;
+
+  /* Amber / Action Accent System */
+  --amber-primary: #d99016;
+  --amber-light: #fff4d6;
+  --amber-deep: #a96800;
+
+  /* Neutral System */
+  --bg-canvas: #f7f8f7;
+  --surface-card: #ffffff;
+  --surface-alt: #f0f4f2;
+  --surface-subtle: #f8faf9;
+
+  /* Typography Colors */
+  --text-primary: #17201c;
+  --text-secondary: #60706a;
+  --text-muted: #8a9691;
+  --text-inverse: #ffffff;
+
+  /* Typography Font Families */
+  --font-display: var(--font-outfit), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-figtree), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Core Backward-Compatible Brand Mapping */
+  --brand-50: var(--forest-light);
+  --brand-100: #d1ebd0;
+  --brand-200: #a7d7c7;
+  --brand-500: var(--primary-forest);
+  --brand-600: var(--forest-deep);
+  --brand-700: var(--forest-dark);
+  --brand-900: #06231b;
+
+  /* Mobile-First Typography Scale */
+  --type-kpi: 28px;
+  --type-title: 22px;
+  --type-section: 18px;
+  --type-card: 16px;
+  --type-body: 14.5px;
+  --type-secondary: 13px;
+  --type-caption: 11.5px;
+
+  /* Spacing Scale (4, 8, 12, 16, 20, 24, 32px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+
+  /* Borders & Dividers */
+  --border-subtle: #edf1ee;
+  --border-default: #e1e7e4;
+  --border-strong: #cdd6d1;
+
+  /* Semantic Status Tokens (Green=Healthy/Approved, Amber=Warning/Pending, Red=Critical/Error, Blue=Info) */
+  --green-bg: #e8f4ef;
+  --green-border: #a7d7c7;
+  --green-text: #0b3d30;
+  --green-dot: #176b52;
+
+  --amber-bg: #fff4d6;
+  --amber-border: #f7d58a;
+  --amber-text: #8a5200;
+  --amber-dot: #d99016;
+
+  --orange-bg: #fff1e6;
+  --orange-border: #fbcba6;
+  --orange-text: #943d0e;
+  --orange-dot: #ea580c;
+
+  --red-bg: #fdf2f2;
+  --red-border: #fca5a5;
+  --red-text: #991b1b;
+  --red-dot: #d32f2f;
+
+  --blue-bg: #ebf4fa;
+  --blue-border: #bfdbfe;
+  --blue-text: #1e40af;
+  --blue-dot: #1e6091;
+
+  --purple-bg: #f5f3ff;
+  --purple-border: #ddd6fe;
+  --purple-text: #5b21b6;
+  --purple-dot: #7c3aed;
+
+  /* Restrained Elevation Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(23, 32, 28, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(23, 32, 28, 0.06), 0 1px 2px -1px rgba(23, 32, 28, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(23, 32, 28, 0.07), 0 2px 4px -2px rgba(23, 32, 28, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(23, 32, 28, 0.08), 0 4px 6px -4px rgba(23, 32, 28, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(23, 32, 28, 0.1), 0 8px 10px -6px rgba(23, 32, 28, 0.05);
+
+  /* Border Radius (Restrained, not over-rounded) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Safe Area Insets & Layout Dimensions */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --touch-target: 44px;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --header-height: 56px;
+  --bottom-nav-height: 60px;
+
+  /* Backward Compatibility Aliases */
+  --navy: var(--forest-dark);
+  --indigo: var(--primary-forest);
+  --ink: var(--text-primary);
+  --muted: var(--text-muted);
+  --line: var(--border-default);
+  --bg: var(--bg-canvas);
+  --card: var(--surface-card);
+  --green: var(--primary-forest);
+  --amber: var(--amber-primary);
+  --red: #d32f2f;
+}
+
+/* Base Reset & Mobile Box Model */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
 
 html {
   height: 100%;
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  position: relative;
 }
 
 body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--ink);
-  background: var(--bg);
-  font-family: var(--font-geist-sans), Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-canvas);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+/* Display & Headline Typography uses Outfit */
+h1,
+h2,
+h3,
+h4,
+.dashGreeting,
+.dashKpiValue,
+.mobileMetricVal,
+.pipelineVal,
+.pageTitleRow h1,
+.brandName,
+.modalHeader h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }
 
 a {
@@ -32,7 +187,14 @@ a {
   text-decoration: none;
 }
 
-/* Hide Next.js development indicator badge in bottom-left corner */
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+
+/* Hide Next.js Development Indicators */
 nextjs-portal,
 #nextjs-dev-indicator,
 [data-nextjs-dev-indicator],
@@ -41,4 +203,216 @@ nextjs-portal,
   opacity: 0 !important;
   pointer-events: none !important;
   visibility: hidden !important;
+}
+
+/* Clean Professional Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cdd6d1;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a9b7b0;
+}
+
+/* Utility Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* ==========================================================================
+   Global Form & Input Controls - Mobile First Touch Friendly
+   ========================================================================== */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+input[type="search"],
+input[type="url"],
+select,
+textarea {
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 14.5px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@media (max-width: 640px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="search"],
+  input[type="url"],
+  select {
+    min-height: 46px;
+    height: 46px;
+    font-size: 15px; /* Prevents auto-zoom on iOS */
+  }
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-forest);
+  box-shadow: 0 0 0 3px rgba(23, 107, 82, 0.15);
+}
+
+textarea {
+  height: auto;
+  min-height: 90px;
+  padding: 10px 14px;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   Button System - Forest & Amber Hierarchy (Touch Targets >= 44px)
+   ========================================================================== */
+.btn,
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active,
+.primary:active,
+.secondary:active {
+  transform: scale(0.98);
+}
+
+/* Primary Action: Forest Green filled */
+.btn-primary,
+.primary {
+  background: var(--primary-forest);
+  color: #ffffff;
+  border-color: var(--forest-deep);
+  box-shadow: 0 1px 2px rgba(15, 77, 60, 0.2);
+}
+
+.btn-primary:hover,
+.primary:hover {
+  background: var(--forest-deep);
+  color: #ffffff;
+}
+
+/* Secondary Action: Clean Neutral Outlined */
+.btn-secondary,
+.secondary {
+  background: #ffffff;
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.btn-secondary:hover,
+.secondary:hover {
+  background: var(--surface-alt);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+/* Amber / Warning Action */
+.btn-warning {
+  background: var(--amber-bg);
+  color: var(--amber-text);
+  border-color: var(--amber-border);
+}
+
+.btn-warning:hover {
+  background: #ffebbe;
+}
+
+/* Critical / Danger Action */
+.btn-danger {
+  background: var(--red-bg);
+  color: var(--red-text);
+  border-color: var(--red-border);
+}
+
+.btn-danger:hover {
+  background: #fee2e2;
+}
+
+/* Ghost Action */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-alt);
+  color: var(--text-primary);
+}
+
+/* Small Button (for inline actions) */
+.btn-sm {
+  min-height: 38px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+/* Large Button */
+.btn-lg {
+  min-height: 48px;
+  height: 48px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+
+/* Frosted Glass Specimen Utility */
+.frosted-glass {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }

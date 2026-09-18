@@ -1,76 +1,195 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Shell from "@/components/Shell";
 import { Title } from "@/components/ui/Title";
 import { Badge } from "@/components/ui/Badge";
 import { exportToExcel } from "@/lib/exportToExcel";
-import { syncAllToGoogleSheets, getSheetUrl, getWebhookUrl, saveSheetConfig } from "@/google_sheets_sync/syncClient";
+import {
+  syncMasterGoogleSheet,
+  syncSupplierGoogleSheet,
+  syncAllSuppliersToGoogleSheets,
+  initializeSheetStructure,
+  getMasterSheetUrl,
+  getWebhookUrl,
+  saveSheetConfig,
+  getSupplierSheetRegistry,
+  saveSupplierSheetUrl,
+} from "@/google_sheets_sync/syncClient";
+import {
+  calculateLiveInventory,
+  getStorageData,
+  STORAGE_KEYS,
+} from "@/lib/dataService";
+import { DEFAULT_SUPPLIERS } from "@/data/defaultSuppliers";
+import { lockScroll, unlockScroll } from "@/lib/scrollLock";
 import "@/components/ui/ui.css";
+import "./reports.css";
 
 export default function ReportsPage() {
   const [data, setData] = useState({
-    suppliers: [],
-    products: [],
+    inventory: [],
+    suppliers: DEFAULT_SUPPLIERS,
     purchases: [],
     issues: [],
     consumptions: [],
     bills: [],
     needed: [],
     payments: [],
+    returns: [],
   });
 
+  const [activeCategory, setActiveCategory] = useState("all"); // 'all' | 'inventory' | 'procurement' | 'operations' | 'finance'
   const [syncLoading, setSyncLoading] = useState(false);
-  const [syncStatus, setSyncStatus] = useState({ type: "", message: "" });
+  const [syncStatus, setSyncStatus] = useState({ type: "", message: "", details: null });
   const [sheetUrl, setSheetUrl] = useState("");
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [webhookInput, setWebhookInput] = useState("");
+  const [sheetUrlInput, setSheetUrlInput] = useState("");
 
-  // Load all data from localStorage
+  // Supplier Sheets Registry State: { [code]: url }
+  const [supplierRegistry, setSupplierRegistry] = useState({});
+  const [syncingSupplierCode, setSyncingSupplierCode] = useState(null);
+
   useEffect(() => {
-    const get = (k) => {
-      try {
-        const raw = localStorage.getItem(k);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) return parsed;
-        }
-      } catch (e) {
-        console.warn(e);
-      }
-      return [];
-    };
+    const rawSuppliers = getStorageData(STORAGE_KEYS.SUPPLIERS, DEFAULT_SUPPLIERS);
 
     setData({
-      suppliers: get("pdv_app_suppliers"),
-      products: get("pdv_app_products"),
-      purchases: get("pdv_app_purchases"),
-      issues: get("pdv_app_issue"),
-      consumptions: get("pdv_app_consumption"),
-      bills: get("pdv_app_bills"),
-      needed: get("pdv_app_material_needed"),
-      payments: get("pdv_app_party_payments"),
+      inventory: calculateLiveInventory(),
+      suppliers: rawSuppliers,
+      purchases: getStorageData(STORAGE_KEYS.PURCHASES, []),
+      issues: getStorageData(STORAGE_KEYS.ISSUES, []),
+      consumptions: getStorageData(STORAGE_KEYS.CONSUMPTIONS, []),
+      bills: getStorageData(STORAGE_KEYS.BILLS, []),
+      needed: getStorageData(STORAGE_KEYS.NEEDED, []),
+      payments: getStorageData(STORAGE_KEYS.PAYMENTS, []),
+      returns: getStorageData(STORAGE_KEYS.RETURNS, []),
     });
 
-    setSheetUrl(getSheetUrl());
+    const currentSheet = getMasterSheetUrl();
+    setSheetUrl(currentSheet);
+    setSheetUrlInput(currentSheet);
     setWebhookInput(getWebhookUrl());
+
+    // Load supplier sheet mappings
+    const savedRegistry = getSupplierSheetRegistry();
+    setSupplierRegistry(savedRegistry);
   }, []);
 
-  // Sync to Google Sheets
-  const handleSyncAll = async () => {
+  useEffect(() => {
+    if (isConfigOpen) {
+      lockScroll();
+    }
+    return () => {
+      if (isConfigOpen) unlockScroll();
+    };
+  }, [isConfigOpen]);
+
+  const handleSyncMaster = async (mode = "upsert") => {
     setSyncLoading(true);
-    setSyncStatus({ type: "info", message: "Syncing all 8 modules to Google Sheets..." });
+    setSyncStatus({
+      type: "info",
+      message: "Synchronizing Admin Master Sheet with duplicate prevention (in-place upsert)... All module & supplier data will be uploaded to the Master Sheet.",
+    });
     try {
-      const res = await syncAllToGoogleSheets({ mode: "replace" });
+      const res = await syncMasterGoogleSheet({ mode });
+      const added = res.totalAdded || 0;
+      const updated = res.totalUpdated || 0;
+      const dur = res.duration || "completed";
+      const countMsg = res.totalReceived !== undefined
+        ? `Processed ${res.totalReceived} records (${added} new inserted, ${updated} in-place updated, 0 duplicates)`
+        : `Synchronized ${res.summary ? Object.keys(res.summary).length : 10} modules to Master Sheet`;
+
       setSyncStatus({
         type: "success",
-        message: `✓ Successfully synced all modules to Google Sheets! (${res.syncedSheets?.length || 8} tabs updated)`,
+        message: `✓ Admin Master Sheet Synced! ${countMsg} in ${dur}. All supplier and company data is safely consolidated in the Master Sheet (independent of individual supplier links).`,
+        details: res.summary,
       });
-      setSheetUrl(getSheetUrl());
+      setSheetUrl(getMasterSheetUrl());
     } catch (err) {
       setSyncStatus({
         type: "error",
-        message: `Sync failed: ${err.message}`,
+        message: `Master sync failed: ${err.message}`,
+      });
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
+  const handleInitializeMaster = async () => {
+    setSyncLoading(true);
+    setSyncStatus({ type: "info", message: "Initializing and formatting Admin Master Sheet structure..." });
+    try {
+      await initializeSheetStructure(sheetUrl, "ADMIN");
+      setSyncStatus({
+        type: "success",
+        message: "✓ Admin Master Sheet tabs, dark slate headers, and KPI Dashboard formatted successfully.",
+      });
+    } catch (err) {
+      setSyncStatus({ type: "error", message: `Initialization failed: ${err.message}` });
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
+  const handleSupplierUrlChange = (supplierCode, newUrl) => {
+    const updated = { ...supplierRegistry, [supplierCode]: newUrl };
+    setSupplierRegistry(updated);
+    saveSupplierSheetUrl(supplierCode, newUrl);
+  };
+
+  const handleSyncSingleSupplier = async (supplierCode, supplierName) => {
+    const targetUrl = supplierRegistry[supplierCode];
+    if (!targetUrl) {
+      alert(`Please enter a Google Sheet URL for supplier ${supplierCode} before syncing.`);
+      return;
+    }
+
+    setSyncingSupplierCode(supplierCode);
+    setSyncStatus({
+      type: "info",
+      message: `Syncing isolated workspace for ${supplierName} [${supplierCode}]...`,
+    });
+
+    try {
+      const res = await syncSupplierGoogleSheet(supplierCode, supplierName);
+      setSyncStatus({
+        type: "success",
+        message: `✓ Supplier [${supplierCode}] Sheet Synced! ${res.totalReceived} records processed (${res.totalAdded} added, ${res.totalUpdated} updated) in ${res.duration}.`,
+      });
+    } catch (err) {
+      setSyncStatus({
+        type: "error",
+        message: `Failed to sync supplier [${supplierCode}]: ${err.message}`,
+      });
+    } finally {
+      setSyncingSupplierCode(null);
+    }
+  };
+
+  const handleSyncAllSuppliers = async () => {
+    const configuredCount = Object.keys(supplierRegistry).filter((k) => Boolean(supplierRegistry[k])).length;
+    if (configuredCount === 0) {
+      alert("No suppliers have registered Google Sheet URLs. Please assign sheet URLs in the table below first.");
+      return;
+    }
+
+    setSyncLoading(true);
+    setSyncStatus({
+      type: "info",
+      message: `Syncing ${configuredCount} supplier Google Sheets in parallel...`,
+    });
+
+    try {
+      const res = await syncAllSuppliersToGoogleSheets(data.suppliers);
+      setSyncStatus({
+        type: "success",
+        message: `✓ Multi-Supplier Batch Sync Complete: ${res.successful} successful, ${res.failed} failed out of ${res.totalConfigured} configured suppliers.`,
+      });
+    } catch (err) {
+      setSyncStatus({
+        type: "error",
+        message: `Bulk supplier sync error: ${err.message}`,
       });
     } finally {
       setSyncLoading(false);
@@ -79,91 +198,241 @@ export default function ReportsPage() {
 
   const handleSaveConfig = (e) => {
     e.preventDefault();
-    saveSheetConfig({ webhookUrl: webhookInput });
+    saveSheetConfig({ webhookUrl: webhookInput, sheetUrl: sheetUrlInput });
+    setSheetUrl(sheetUrlInput);
     setIsConfigOpen(false);
-    setSyncStatus({ type: "success", message: "Webhook URL configuration saved." });
+    setSyncStatus({ type: "success", message: "Google Sheets connection configuration saved." });
   };
 
-  // Reusable download helper
-  const handleDownload = (filename, headers, rows) => {
-    exportToExcel({ filename, headers, rows });
-  };
-
-  const reports = [
+  // Report Definitions across 4 categories
+  const reportCards = [
+    // 1. INVENTORY
     {
-      title: "Invoices & Bills Vault",
-      desc: "Soft copies of Tax Invoices & Proforma Invoices.",
-      count: data.bills.length,
-      icon: "🧾",
-      onDownload: () => handleDownload("Bills_Report", ["Type", "Number", "Supplier", "Date", "Amount", "File"], data.bills.map((b) => [b.billType, b.billNumber, b.supplierName, b.billDate, b.amount, b.fileName])),
+      id: "inv-stock",
+      category: "inventory",
+      categoryLabel: "Inventory",
+      title: "Current Stock Summary",
+      desc: "Live available inventory stock and unit valuations.",
+      count: data.inventory.length,
+      icon: "📦",
+      onExport: () =>
+        exportToExcel({
+          filename: "Stock_Summary_Report",
+          headers: ["Material", "Category", "Available Stock", "Unit", "Rate", "Valuation", "Status"],
+          rows: data.inventory.map((i) => [i.name, i.category, i.availableStock, i.unit, i.rate, i.stockValue, i.status]),
+        }),
     },
     {
+      id: "inv-low",
+      category: "inventory",
+      categoryLabel: "Inventory",
+      title: "Low & Critical Stock Items",
+      desc: "Materials below safety threshold requiring procurement replenishment.",
+      count: data.inventory.filter((i) => i.status === "Low" || i.status === "Critical").length,
+      icon: "⚠️",
+      onExport: () =>
+        exportToExcel({
+          filename: "Low_Stock_Action_Report",
+          headers: ["Material", "Category", "Available Stock", "Unit", "Status"],
+          rows: data.inventory
+            .filter((i) => i.status === "Low" || i.status === "Critical")
+            .map((i) => [i.name, i.category, i.availableStock, i.unit, i.status]),
+        }),
+    },
+
+    // 2. PROCUREMENT
+    {
+      id: "proc-purchases",
+      category: "procurement",
+      categoryLabel: "Procurement",
+      title: "Purchase Orders & PI Report",
+      desc: "All inward vendor purchases, quotation references, and invoice amounts.",
+      count: data.purchases.length,
+      icon: "▣",
+      onExport: () =>
+        exportToExcel({
+          filename: "Purchases_PI_Report",
+          headers: ["PI Number", "Date", "Supplier", "Quote #", "Items Count", "Total Amount", "Status"],
+          rows: data.purchases.map((p) => [
+            p.piNumber || (Array.isArray(p) ? p[0] : "—"),
+            p.piDate || (Array.isArray(p) ? p[1] : "—"),
+            p.supplier || (Array.isArray(p) ? p[2] : "—"),
+            p.quotationNumber || (Array.isArray(p) ? p[3] : "—"),
+            p.itemsCount || 1,
+            p.totalAmount || (Array.isArray(p) ? p[5] : "—"),
+            p.status || "Approved",
+          ]),
+        }),
+    },
+    {
+      id: "proc-suppliers",
+      category: "procurement",
+      categoryLabel: "Procurement",
       title: "Suppliers Directory",
-      desc: "All active and inactive suppliers with contact details.",
+      desc: "Active and approved suppliers with GSTIN and contact details.",
       count: data.suppliers.length,
       icon: "🏢",
-      onDownload: () => handleDownload("Suppliers_Directory", ["Code", "Name", "Contact", "Phone", "Email", "GST", "Status"], data.suppliers),
+      onExport: () =>
+        exportToExcel({
+          filename: "Suppliers_Directory_Report",
+          headers: ["Code", "Name", "Contact Person", "Phone", "Email", "GSTIN", "Status"],
+          rows: data.suppliers,
+        }),
     },
+
+    // 3. OPERATIONS
     {
-      title: "Products Catalog",
-      desc: "Complete product master, categories, and rates.",
-      count: data.products.length,
-      icon: "📦",
-      onDownload: () => handleDownload("Products_Catalog", ["Code", "Name", "Category", "Unit", "Desc", "Supplier", "Rate", "Status"], data.products),
-    },
-    {
-      title: "Purchase Orders",
-      desc: "Purchase orders, vendors, and total billing amounts.",
-      count: data.purchases.length,
-      icon: "📑",
-      onDownload: () => handleDownload("Purchases_Report", ["PI Number", "Date", "Supplier", "Quote #", "Items", "Amount", "Status"], data.purchases),
-    },
-    {
-      title: "Material Issues",
-      desc: "Dispatched materials to sites and departments.",
+      id: "ops-issues",
+      category: "operations",
+      categoryLabel: "Operations",
+      title: "Material Issue & Dispatches",
+      desc: "Challans and materials dispatched to contractors, departments, and sites.",
       count: data.issues.length,
       icon: "↗",
-      onDownload: () => handleDownload("Material_Issues", ["Number", "Date", "Department", "Items", "Status"], data.issues.map((i) => [i.number, i.date, i.department, i.itemsCount, i.status])),
+      onExport: () =>
+        exportToExcel({
+          filename: "Material_Issues_Report",
+          headers: ["Challan #", "Date", "Issued To / Site", "Items Count", "Status"],
+          rows: data.issues.map((i) => [i.number, i.date, i.department, i.itemsCount, i.status]),
+        }),
     },
     {
-      title: "Material Consumption",
-      desc: "Usage history and remaining balances.",
+      id: "ops-consumption",
+      category: "operations",
+      categoryLabel: "Operations",
+      title: "Site Material Consumption",
+      desc: "Actual physical consumption recorded at project sites.",
       count: data.consumptions.length,
       icon: "◔",
-      onDownload: () => handleDownload("Material_Consumption", ["Number", "Date", "Department", "Items", "Status"], data.consumptions.map((c) => [c.number, c.date, c.department, c.itemsCount, c.status])),
+      onExport: () =>
+        exportToExcel({
+          filename: "Material_Consumption_Report",
+          headers: ["Consumption #", "Date", "Site", "Items Count", "Status"],
+          rows: data.consumptions.map((c) => [c.number, c.date, c.department, c.itemsCount, c.status]),
+        }),
     },
     {
-      title: "Material Needed & Requisitions",
-      desc: "Active site requirements, demand, and priorities.",
+      id: "ops-needed",
+      category: "operations",
+      categoryLabel: "Operations",
+      title: "Site Requisitions & Demand",
+      desc: "Active site requirements, required dates, and priorities.",
       count: data.needed.length,
       icon: "📋",
-      onDownload: () => handleDownload("Material_Needed_Report", ["Party / Site", "Material Required", "Qty Needed", "Unit", "Required Date", "Priority", "Status", "Remarks"], data.needed.map((n) => [n.partyName, n.materialName, n.quantityNeeded, n.unit, n.requiredByDate, n.priority, n.status, n.remarks])),
+      onExport: () =>
+        exportToExcel({
+          filename: "Material_Requisitions_Report",
+          headers: ["Site / Party", "Material", "Qty Needed", "Unit", "Required Date", "Priority", "Status"],
+          rows: data.needed.map((n) => [
+            n.partyName,
+            n.materialName,
+            n.quantityNeeded,
+            n.unit,
+            n.requiredByDate,
+            n.priority,
+            n.status,
+          ]),
+        }),
     },
     {
-      title: "Party Payment Ledger",
-      desc: "Invoiced values, amount paid/received, and balance due.",
+      id: "ops-returns",
+      category: "operations",
+      categoryLabel: "Operations",
+      title: "Returns & Movement Log",
+      desc: "Site returns to warehouse, inter-site transfers, and scrap records.",
+      count: data.returns.length,
+      icon: "⇄",
+      onExport: () =>
+        exportToExcel({
+          filename: "Returns_and_Transfers_Report",
+          headers: ["Voucher #", "Type", "Date", "Source", "Destination", "Material", "Qty", "Reason"],
+          rows: data.returns.map((r) => [
+            r.returnNo,
+            r.movementType,
+            r.date,
+            r.sourceSite,
+            r.destinationSite,
+            r.materialName,
+            `${r.quantity} ${r.unit}`,
+            r.reason,
+          ]),
+        }),
+    },
+
+    // 4. FINANCE
+    {
+      id: "fin-payments",
+      category: "finance",
+      categoryLabel: "Finance",
+      title: "Party & Vendor Payment Ledger",
+      desc: "Invoiced amounts, payment receipts, balance due, and modes.",
       count: data.payments.length,
       icon: "💰",
-      onDownload: () => handleDownload("Party_Payment_Ledger", ["Party", "Invoice #", "Date", "Total Billed", "Amount Paid", "Balance Left", "Payment Mode", "Status"], data.payments.map((p) => [p.partyName, p.invoiceNo, p.invoiceDate, p.totalAmount, p.amountPaid, p.balanceLeft, p.paymentMode, p.status])),
+      onExport: () =>
+        exportToExcel({
+          filename: "Payment_Ledger_Statement",
+          headers: ["Party / Vendor", "Invoice #", "Date", "Total Billed (₹)", "Amount Paid (₹)", "Balance Left (₹)", "Payment Mode", "Status"],
+          rows: data.payments.map((p) => [
+            p.partyName,
+            p.invoiceNo,
+            p.invoiceDate,
+            p.totalAmount,
+            p.amountPaid,
+            p.balanceLeft,
+            p.paymentMode,
+            p.status,
+          ]),
+        }),
+    },
+    {
+      id: "fin-bills",
+      category: "finance",
+      categoryLabel: "Finance",
+      title: "Attached Bills & Invoices Vault",
+      desc: "Soft copies of Tax Invoices and Proforma Invoices with audit log.",
+      count: data.bills.length,
+      icon: "🧾",
+      onExport: () =>
+        exportToExcel({
+          filename: "Bills_Vault_Register",
+          headers: ["Type", "Number", "Supplier", "Date", "Amount", "File Name"],
+          rows: data.bills.map((b) => [b.billType, b.billNumber, b.supplierName, b.billDate, b.amount, b.fileName]),
+        }),
     },
   ];
 
+  const filteredReports = activeCategory === "all"
+    ? reportCards
+    : reportCards.filter((r) => r.category === activeCategory);
+
   return (
     <Shell>
-      <Title title="Reports & Cloud Sync" desc="Synchronize to official Google Sheets or download Excel spreadsheets." />
+      <Title
+        title="Reports & Cloud Sync Hub"
+        desc="Generate operational reports, download Excel spreadsheets, and synchronize live with Google Sheets."
+      />
 
-      {/* Google Sheets Sync Card */}
-      <section className="card" style={{ padding: "18px 20px", marginBottom: "20px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+      {/* 1. Admin Master Google Sheets Sync Card */}
+      <section className="card syncHubCard">
+        <div className="syncHubRow">
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h2 style={{ fontSize: "16px", margin: 0 }}>Google Sheets Cloud Sync</h2>
-              <span style={{ fontSize: "11px", fontWeight: "700", background: "#dcfce7", color: "#166534", padding: "2px 8px", borderRadius: "12px" }}>
-                Connected
-              </span>
+              <h2 style={{ fontSize: "16px", margin: 0 }}>Admin Master Google Sheet (Consolidated Database)</h2>
+              <span className="liveBadge">Connected</span>
             </div>
-            <p style={{ fontSize: "12.5px", color: "var(--muted)", margin: "4px 0 0" }}>
-              Official Spreadsheet: <code style={{ background: "rgba(0,0,0,0.05)", padding: "1px 4px", borderRadius: "4px" }}>14oJVSNd3xuRloR9DZR_7zfnjvMVrwWh6nltjvqap_h0</code>
+            <p style={{ fontSize: "12.5px", color: "var(--text-muted)", margin: "4px 0 0" }}>
+              Consolidates ALL operational & supplier records directly into this Master Sheet. Individual supplier sheet links are completely optional.
+            </p>
+            <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: "2px 0 0" }}>
+              Master Sheet Link:{" "}
+              <a
+                href={sheetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--primary)", textDecoration: "underline", wordBreak: "break-all" }}
+              >
+                {sheetUrl}
+              </a>
             </p>
           </div>
 
@@ -173,118 +442,354 @@ export default function ReportsPage() {
               className="secondary"
               onClick={() => setIsConfigOpen(!isConfigOpen)}
             >
-              ⚙ Webhook Settings
+              ⚙ Connection Settings
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              disabled={syncLoading}
+              onClick={handleInitializeMaster}
+              title="Ensure all 10 module tabs, frozen headers, and KPI Dashboard exist"
+            >
+              🛠 Repair Structure
             </button>
             <a
               href={sheetUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="secondary"
-              style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
+              style={{ textDecoration: "none" }}
             >
-              ↗ Open Google Sheet
+              ↗ Open Master Sheet
             </a>
             <button
               type="button"
               className="primary"
               disabled={syncLoading}
-              onClick={handleSyncAll}
+              onClick={() => handleSyncMaster("upsert")}
             >
-              {syncLoading ? "Syncing..." : "⚡ Sync All to Google Sheets"}
+              {syncLoading ? "Syncing..." : "⚡ Sync Master Sheet (Upsert)"}
             </button>
           </div>
         </div>
 
-        {/* Config drawer */}
+        {/* Webhook & Sheet Config Form */}
         {isConfigOpen && (
-          <form onSubmit={handleSaveConfig} style={{ marginTop: "16px", padding: "12px", background: "var(--panel-alt)", borderRadius: "var(--radius-sm)", display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
-            <label style={{ fontSize: "12px", fontWeight: "600", flex: "1 1 300px" }}>
-              Google Apps Script Webhook URL:
-              <input
-                type="url"
-                required
-                style={{ width: "100%", height: "34px", marginTop: "4px", padding: "0 8px", borderRadius: "4px", border: "1px solid var(--border)" }}
-                value={webhookInput}
-                onChange={(e) => setWebhookInput(e.target.value)}
-              />
-            </label>
-            <button type="submit" className="primary" style={{ height: "34px", alignSelf: "flex-end" }}>Save</button>
+          <form
+            onSubmit={handleSaveConfig}
+            className="webhookConfigForm animate-fade-in"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              background: "var(--bg-card)",
+              padding: "16px",
+              borderRadius: "8px",
+              border: "1px solid var(--border)",
+              marginTop: "12px",
+            }}
+          >
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              <label style={{ fontSize: "12px", fontWeight: "600", flex: "1 1 320px" }}>
+                Google Apps Script Webhook URL:
+                <input
+                  type="url"
+                  required
+                  placeholder="https://script.google.com/macros/s/.../exec"
+                  style={{ marginTop: "4px", width: "100%" }}
+                  value={webhookInput}
+                  onChange={(e) => setWebhookInput(e.target.value)}
+                />
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "normal" }}>
+                  The Web App URL generated when deploying your Apps Script (ends in /exec).
+                </span>
+              </label>
+
+              <label style={{ fontSize: "12px", fontWeight: "600", flex: "1 1 320px" }}>
+                Admin Master Spreadsheet URL:
+                <input
+                  type="url"
+                  required
+                  placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                  style={{ marginTop: "4px", width: "100%" }}
+                  value={sheetUrlInput}
+                  onChange={(e) => setSheetUrlInput(e.target.value)}
+                />
+                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "normal" }}>
+                  The link to your consolidated Admin Master Google Spreadsheet.
+                </span>
+              </label>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+              <button type="button" className="secondary" onClick={() => setIsConfigOpen(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="primary">
+                Save Settings
+              </button>
+            </div>
           </form>
         )}
 
-        {/* Live sync alert */}
+        {/* Sync Status Alert */}
         {syncStatus.message && (
-          <div
-            style={{
-              marginTop: "12px",
-              padding: "8px 12px",
-              borderRadius: "var(--radius-sm)",
-              fontSize: "12.5px",
-              fontWeight: "600",
-              background: syncStatus.type === "success" ? "var(--green-bg)" : syncStatus.type === "error" ? "var(--red-bg)" : "var(--blue-bg)",
-              color: syncStatus.type === "success" ? "var(--green-text)" : syncStatus.type === "error" ? "var(--red-text)" : "var(--blue-text)",
-              border: "1px solid currentColor",
-            }}
-          >
+          <div className={`syncStatusAlert ${syncStatus.type}`}>
             {syncStatus.message}
           </div>
         )}
       </section>
 
-      {/* Reports Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-        {reports.map((r) => (
-          <div key={r.title} className="card" style={{ padding: "18px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "12px" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                <span style={{ fontSize: "22px" }}>{r.icon}</span>
-                <div>
-                  <h3 style={{ fontSize: "14px", margin: 0 }}>{r.title}</h3>
-                  <small style={{ color: "var(--muted)" }}>{r.count} records</small>
-                </div>
-              </div>
-              <p style={{ fontSize: "12.5px", color: "var(--muted)", margin: 0 }}>{r.desc}</p>
+      {/* 2. Multi-Supplier Google Sheets Registry & Workspace Automation */}
+      <section className="card syncHubCard" style={{ marginTop: "16px" }}>
+        <div className="syncHubRow">
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <h2 style={{ fontSize: "16px", margin: 0 }}>Multi-Supplier Sheet Automation & Registry</h2>
+              <span className="pillSuccess">Data Isolation Guard</span>
             </div>
-            <button type="button" className={r.count > 0 ? "primary" : "secondary"} onClick={r.onDownload}>
-              ⤓ Download Excel (.csv)
+            <p style={{ fontSize: "12.5px", color: "var(--text-muted)", margin: "4px 0 0" }}>
+              Assign dedicated Google Sheets per supplier. The generic synchronization engine strictly enforces data isolation and updates existing rows without duplication.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-secondary)" }}>
+              {Object.keys(supplierRegistry).filter((k) => Boolean(supplierRegistry[k])).length} of {data.suppliers.length} Configured
+            </span>
+            <button
+              type="button"
+              className="primary"
+              disabled={syncLoading}
+              onClick={handleSyncAllSuppliers}
+            >
+              ⚡ Sync All Supplier Sheets
             </button>
           </div>
-        ))}
-      </div>
-
-      {/* Bills Vault Table */}
-      <section className="card tableCard" style={{ marginTop: "24px" }}>
-        <div className="sectionHead">
-          <h2>Uploaded Bills Register ({data.bills.length})</h2>
         </div>
-        <div className="tableScroll">
-          <table>
+
+        {/* Mobile Supplier Registry Cards (hidden on desktop) */}
+        <div className="mobileCardList">
+          {data.suppliers.map((s, idx) => {
+            const code = s.code || (Array.isArray(s) ? s[0] : `SUP-${String(idx + 1).padStart(3, "0")}`);
+            const name = s.name || (Array.isArray(s) ? s[1] : `Supplier ${idx + 1}`);
+            const contact = s.contactPerson || (Array.isArray(s) ? s[2] : "—");
+            const gst = s.gst || (Array.isArray(s) ? s[5] : "—");
+            const assignedUrl = supplierRegistry[code] || "";
+            const isSyncing = syncingSupplierCode === code;
+
+            return (
+              <div key={code} className="mobileDataCard">
+                <div className="mobileCardHeader">
+                  <div className="mobileCardTitleArea">
+                    <code className="codeBadge">{code}</code>
+                    <h3 className="mobileCardTitle" style={{ marginTop: "4px" }}>{name}</h3>
+                  </div>
+                  {assignedUrl ? (
+                    <span className="pillSuccess">● Connected</span>
+                  ) : (
+                    <span className="pillWarning">○ Not Set</span>
+                  )}
+                </div>
+
+                <div className="mobileCardBody" style={{ gridTemplateColumns: "1fr" }}>
+                  <div className="mobileMetricItem">
+                    <span className="mobileMetricLabel">Contact Person / GSTIN</span>
+                    <span className="mobileMetricVal" style={{ fontSize: "12.5px" }}>
+                      {contact} · <span style={{ fontFamily: "monospace" }}>{gst}</span>
+                    </span>
+                  </div>
+                  <div style={{ marginTop: "6px" }}>
+                    <label style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)", display: "block", marginBottom: "4px" }}>
+                      Dedicated Google Sheet URL
+                    </label>
+                    <input
+                      type="url"
+                      className="sheetInput"
+                      style={{ minWidth: "100%" }}
+                      placeholder="Paste Google Sheet URL..."
+                      value={assignedUrl}
+                      onChange={(e) => handleSupplierUrlChange(code, e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mobileCardFooter">
+                  {assignedUrl && (
+                    <a
+                      href={assignedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-secondary"
+                      style={{ textDecoration: "none" }}
+                    >
+                      ↗ Open Sheet
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    className="mobilePrimaryAction"
+                    disabled={!assignedUrl || isSyncing || syncLoading}
+                    onClick={() => handleSyncSingleSupplier(code, name)}
+                  >
+                    {isSyncing ? "Syncing..." : "⚡ Sync Sheet"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Suppliers Sheet Registry Table (desktop) */}
+        <div className="supplierRegistryTableWrapper">
+          <table className="supplierRegistryTable">
             <thead>
-              <tr><th>Type</th><th>Bill #</th><th>Supplier</th><th>Date</th><th>Amount</th><th>File</th></tr>
+              <tr>
+                <th style={{ width: "100px" }}>Code</th>
+                <th>Supplier / Company</th>
+                <th>Contact & GSTIN</th>
+                <th>Dedicated Google Sheet URL</th>
+                <th style={{ width: "120px" }}>Status</th>
+                <th style={{ width: "160px", textAlign: "right" }}>Actions</th>
+              </tr>
             </thead>
             <tbody>
-              {data.bills.length === 0 ? (
-                <tr><td colSpan={6} className="emptyTable"><p>No bills uploaded yet.</p></td></tr>
-              ) : (
-                data.bills.map((b) => (
-                  <tr key={b.id}>
-                    <td><Badge>{b.billType}</Badge></td>
-                    <td><strong>{b.billNumber}</strong></td>
-                    <td>{b.supplierName}</td>
-                    <td>{b.billDate}</td>
-                    <td>{b.amount}</td>
+              {data.suppliers.map((s, idx) => {
+                const code = s.code || (Array.isArray(s) ? s[0] : `SUP-${String(idx + 1).padStart(3, "0")}`);
+                const name = s.name || (Array.isArray(s) ? s[1] : `Supplier ${idx + 1}`);
+                const contact = s.contactPerson || (Array.isArray(s) ? s[2] : "—");
+                const gst = s.gst || (Array.isArray(s) ? s[5] : "—");
+                const assignedUrl = supplierRegistry[code] || "";
+                const isSyncing = syncingSupplierCode === code;
+
+                return (
+                  <tr key={code}>
                     <td>
-                      <a href={b.fileData} download={b.fileName} style={{ color: "#4f46e5", fontWeight: "600" }}>
-                        📎 {b.fileName}
-                      </a>
+                      <b style={{ color: "var(--brand-600)" }}>{code}</b>
+                    </td>
+                    <td>
+                      <b>{name}</b>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
+                        {contact} · <span style={{ fontFamily: "monospace" }}>{gst}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <input
+                        type="url"
+                        className="sheetInput"
+                        placeholder="Paste supplier Google Sheet URL here..."
+                        value={assignedUrl}
+                        onChange={(e) => handleSupplierUrlChange(code, e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      {assignedUrl ? (
+                        <span className="pillSuccess">● Connected</span>
+                      ) : (
+                        <span className="pillWarning">○ Not Set</span>
+                      )}
+                    </td>
+                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                      <div style={{ display: "inline-flex", gap: "6px" }}>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary"
+                          disabled={!assignedUrl || isSyncing || syncLoading}
+                          onClick={() => handleSyncSingleSupplier(code, name)}
+                          title="Upsert this supplier's orders & invoices to their dedicated sheet"
+                        >
+                          {isSyncing ? "..." : "⚡ Sync"}
+                        </button>
+                        {assignedUrl && (
+                          <a
+                            href={assignedUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-sm btn-secondary"
+                            style={{ textDecoration: "none" }}
+                            title="Open Google Spreadsheet"
+                          >
+                            ↗
+                          </a>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
       </section>
+
+
+      {/* Report Categories Filter Tabs */}
+      <div className="reportCategoryTabs">
+        <button
+          type="button"
+          className={`reportCatTab ${activeCategory === "all" ? "active" : ""}`}
+          onClick={() => setActiveCategory("all")}
+        >
+          All Reports ({reportCards.length})
+        </button>
+        <button
+          type="button"
+          className={`reportCatTab ${activeCategory === "inventory" ? "active" : ""}`}
+          onClick={() => setActiveCategory("inventory")}
+        >
+          📦 Inventory ({reportCards.filter((r) => r.category === "inventory").length})
+        </button>
+        <button
+          type="button"
+          className={`reportCatTab ${activeCategory === "procurement" ? "active" : ""}`}
+          onClick={() => setActiveCategory("procurement")}
+        >
+          🛒 Procurement ({reportCards.filter((r) => r.category === "procurement").length})
+        </button>
+        <button
+          type="button"
+          className={`reportCatTab ${activeCategory === "operations" ? "active" : ""}`}
+          onClick={() => setActiveCategory("operations")}
+        >
+          🏗 Operations ({reportCards.filter((r) => r.category === "operations").length})
+        </button>
+        <button
+          type="button"
+          className={`reportCatTab ${activeCategory === "finance" ? "active" : ""}`}
+          onClick={() => setActiveCategory("finance")}
+        >
+          💰 Finance & Ledger ({reportCards.filter((r) => r.category === "finance").length})
+        </button>
+      </div>
+
+      {/* Reports Grid */}
+      <div className="reportsGrid">
+        {filteredReports.map((r) => (
+          <div key={r.id} className="card reportCard">
+            <div>
+              <div className="reportCardTop">
+                <span className="reportIcon">{r.icon}</span>
+                <span className="reportCatBadge">{r.categoryLabel}</span>
+              </div>
+              <h3 className="reportTitle">{r.title}</h3>
+              <p className="reportDesc">{r.desc}</p>
+            </div>
+
+            <div className="reportCardBottom">
+              <span className="recordCount">{r.count} Records</span>
+              <button
+                type="button"
+                className={`btn btn-sm ${r.count > 0 ? "btn-primary" : "btn-secondary"}`}
+                onClick={r.onExport}
+              >
+                ⤓ Download Excel (.csv)
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </Shell>
   );
 }

@@ -1,45 +1,112 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthContext";
+import GlobalSearchModal from "@/components/ui/GlobalSearchModal";
 import "./shell.css";
 
-// Navigation links for the sidebar
-const navigationItems = [
-  { href: "/", label: "Dashboard", icon: "⌂" },
-  { href: "/party-ledger", label: "Party Ledger", icon: "⚖" },
-  { href: "/suppliers", label: "Suppliers", icon: "♙" },
-  { href: "/products", label: "Products", icon: "▦" },
-  { href: "/purchases", label: "Purchases", icon: "▣" },
-  { href: "/material-issue", label: "Material Issue", icon: "↗" },
-  { href: "/material-consumption", label: "Consumption", icon: "◔" },
-  { href: "/upload", label: "Upload Data", icon: "⇧" },
-  { href: "/reports", label: "Reports", icon: "▤" },
+// Admin Navigation Menu (Clean & Simple)
+const adminNavigationSections = [
+  {
+    title: "OPERATIONS",
+    items: [
+      { href: "/", label: "Dashboard", icon: "⌂" },
+      { href: "/inventory", label: "Inventory", icon: "📦" },
+      { href: "/purchases", label: "Purchases", icon: "▣" },
+      { href: "/material-requests", label: "Requests", icon: "📋" },
+      { href: "/material-issue", label: "Issue Materials", icon: "↗" },
+      { href: "/material-consumption", label: "Consumption", icon: "◔" },
+      { href: "/returns", label: "Returns", icon: "🔄" },
+    ],
+  },
+  {
+    title: "DIRECTORIES",
+    items: [
+      { href: "/party-ledger", label: "Party Ledger", icon: "⚖" },
+      { href: "/parties", label: "Parties", icon: "🏗" },
+      { href: "/suppliers", label: "Suppliers", icon: "♙" },
+      { href: "/products", label: "Products", icon: "▦" },
+      { href: "/upload", label: "Upload Vault", icon: "⇧" },
+      { href: "/reports", label: "Reports & Sync", icon: "▤" },
+      { href: "/supplier", label: "Supplier Portal", icon: "🏢" },
+    ],
+  },
+];
+
+// Supplier Dedicated Navigation Menu (Clean & Simple)
+const supplierNavigationSections = [
+  {
+    title: "SUPPLIER PORTAL",
+    items: [
+      { href: "/supplier", label: "Dashboard", icon: "🏢" },
+      { href: "/supplier/orders", label: "Orders", icon: "📋" },
+      { href: "/supplier/materials", label: "Materials", icon: "📦" },
+      { href: "/supplier/profile", label: "Profile", icon: "⚙" },
+    ],
+  },
 ];
 
 export default function Shell({ children }) {
-  // Current page URL to highlight the active menu item
   const currentPath = usePathname();
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth();
 
-  // State to control mobile sidebar drawer (open/close)
+  const isSupplier = user?.role === "SUPPLIER";
+  const activeNavigationSections = isSupplier
+    ? supplierNavigationSections
+    : adminNavigationSections;
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // State to toggle compact mini sidebar on desktop
   const [isCompactSidebar, setIsCompactSidebar] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // Find the label for the current page to show in the header breadcrumb
-  const currentPage = navigationItems.find((item) => {
-    if (item.href === "/") {
-      return currentPath === "/";
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Find current active page title
+  let pageTitle = isSupplier ? "Supplier Portal" : "Dashboard";
+  for (const section of activeNavigationSections) {
+    const found = section.items.find((item) => {
+      if (item.href === "/" && !isSupplier) return currentPath === "/";
+      if (item.href === "/supplier" && isSupplier) return currentPath === "/supplier";
+      return currentPath.startsWith(item.href);
+    });
+    if (found) {
+      pageTitle = found.label;
+      break;
     }
-    return currentPath.startsWith(item.href);
-  });
-  const pageTitle = currentPage ? currentPage.label : "Dashboard";
+  }
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const userInitials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : isSupplier
+    ? "VE"
+    : "SA";
 
   return (
     <div className={`app ${isCompactSidebar ? "compact" : ""}`}>
-      {/* Dim backdrop overlay for mobile when menu is open */}
+      {/* Dim backdrop overlay for mobile */}
       {isMobileMenuOpen && (
         <button
           type="button"
@@ -53,8 +120,15 @@ export default function Shell({ children }) {
       <aside className={`sidebar ${isMobileMenuOpen ? "open" : ""}`}>
         {/* Brand Logo & Name */}
         <div className="brand">
-          <span className="brandMark">P</span>
-          <span className="brandName">PDV Solutions</span>
+          <span className="brandMark">{isSupplier ? "🏢" : "P"}</span>
+          <div className="brandTextWrapper">
+            <span className="brandName">
+              {isSupplier ? "PDV Supplier" : "PDV Solutions"}
+            </span>
+            <span className="brandSub">
+              {isSupplier ? "Supplier Portal" : "Material Management"}
+            </span>
+          </div>
           <button
             type="button"
             className="close"
@@ -64,37 +138,56 @@ export default function Shell({ children }) {
           </button>
         </div>
 
-        <p className="navLabel">WORKSPACE</p>
+        {/* Navigation Sections */}
+        <div className="sidebarNavScroll">
+          {activeNavigationSections.map((section) => (
+            <div key={section.title} className="navSection">
+              <p className="navLabel">{section.title}</p>
+              <nav>
+                {section.items.map((item) => {
+                  const isActive =
+                    currentPath === item.href ||
+                    (item.href !== "/" && item.href !== "/supplier" && currentPath.startsWith(item.href));
 
-        {/* Sidebar Links */}
-        <nav>
-          {navigationItems.map((item) => {
-            // Check if this menu link matches current URL
-            const isActive =
-              currentPath === item.href ||
-              (item.href !== "/" && currentPath.startsWith(item.href));
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={isActive ? "active" : ""}
+                    >
+                      <i>{item.icon}</i>
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          ))}
+        </div>
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={isActive ? "active" : ""}
-              >
-                <i>{item.icon}</i>
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* User profile footer at bottom of sidebar */}
+        {/* User profile footer at bottom of sidebar with Red Log Out */}
         <div className="sideFoot">
-          <div className="avatar">SA</div>
-          <div>
-            <b>Shyam Aggarwal</b>
-            <small>Administrator</small>
+          <div className="avatar">{userInitials}</div>
+          <div className="userInfoBlock">
+            <b title={user?.name || (isSupplier ? "Vasu Enterprises" : "Administrator")}>
+              {user?.name || (isSupplier ? "Vasu Enterprises" : "Shyam Aggarwal")}
+            </b>
+            <small>
+              {isSupplier
+                ? `Supplier (${user?.supplierCode || "SUP-001"})`
+                : "Administrator (Procurement)"}
+            </small>
           </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="sideLogoutBtn"
+            title="Log Out"
+            aria-label="Log Out"
+          >
+            🚪
+          </button>
         </div>
       </aside>
 
@@ -124,36 +217,110 @@ export default function Shell({ children }) {
 
           {/* Breadcrumb Title */}
           <div className="crumb">
-            Material Management <span>/</span> {pageTitle}
+            {isSupplier ? "Supplier Portal" : "Material Management"} <span>/</span> {pageTitle}
           </div>
+
+          {/* Omnisearch Quick Button */}
+          {!isSupplier && (
+            <button
+              type="button"
+              className="headerSearchBar"
+              onClick={() => setIsSearchOpen(true)}
+              aria-label="Global search (Ctrl+K)"
+            >
+              <span>🔍</span>
+              <span className="searchPrompt">Search stock, suppliers, PI#, vouchers...</span>
+              <kbd className="searchKbd">Ctrl K</kbd>
+            </button>
+          )}
 
           {/* Header Right Side */}
           <div className="headRight">
-            <a
-              href="https://docs.google.com/spreadsheets/d/14oJVSNd3xuRloR9DZR_7zfnjvMVrwWh6nltjvqap_h0/edit"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sheetLinkBtn"
-              title="Open Google Sheets in new tab to view live synced data"
-            >
-              <span className="sheetDot" />
-              <span>Google Sheets ↗</span>
-            </a>
+            {!isSupplier && (
+              <Link
+                href="/reports"
+                className="headerSyncBtn"
+                title="Reports & Cloud Sync"
+              >
+                ⚡ Google Sync
+              </Link>
+            )}
 
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="iconButton"
-            >
-              ♢
-            </button>
-            <div className="headAvatar">SA</div>
+            {/* User Dropdown / Profile */}
+            <div className="userDropdownWrap">
+              <button
+                type="button"
+                className="headAvatarBtn"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                aria-label="User profile menu"
+              >
+                <div className="headAvatar">{userInitials}</div>
+                <span className="headUserName">
+                  {user?.name ? user.name.split(" ")[0] : isSupplier ? "Supplier" : "Admin"}
+                </span>
+                <span className={`headRolePill ${isSupplier ? "supplier" : "admin"}`}>
+                  {isSupplier ? "Supplier" : "Admin"}
+                </span>
+                <span className="caret">▾</span>
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="userMenuPopup">
+                  <div className="userMenuHeader">
+                    <b>{user?.name || (isSupplier ? "Vasu Enterprises" : "Shyam Aggarwal")}</b>
+                    <small>{user?.email || (isSupplier ? "supplier1@example.com" : "admin@pdv.com")}</small>
+                    <span className="userMenuRoleBadge">
+                      {isSupplier
+                        ? `🏢 Supplier Portal (${user?.supplierCode || "SUP-001"})`
+                        : "🛡️ Administrator"}
+                    </span>
+                  </div>
+                  <div className="userMenuDivider" />
+
+                  {isSupplier ? (
+                    <Link
+                      href="/supplier/profile"
+                      className="userMenuItem"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <span>🏢</span> Supplier Profile & Details
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/reports"
+                      className="userMenuItem"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <span>📊</span> Reports & Cloud Hub
+                    </Link>
+                  )}
+
+                  <div className="userMenuDivider" />
+                  <button
+                    type="button"
+                    className="userMenuItem danger"
+                    onClick={() => {
+                      setIsUserMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    <span>🚪</span> Log Out
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
         {/* Page Content */}
         <div className="content">{children}</div>
       </main>
+
+      {/* Global Omnisearch Modal */}
+      <GlobalSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+      />
     </div>
   );
 }

@@ -1,18 +1,10 @@
-/* ==========================================================================
-   Enterprise Integration & Reporting Hub Styles (reports.css)
-   ========================================================================== */
-
-/* Integration Header Box */
-.integrationHeaderCard {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 16px 20px;
+.syncHubCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-default);
   margin-bottom: 22px;
-  box-shadow: var(--shadow-subtle);
 }
 
-.integrationRow {
+.syncHubRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -20,198 +12,277 @@
   gap: 14px;
 }
 
-.integrationInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.integrationTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.integrationTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.015em;
-}
-
-.integrationPill {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.liveBadge {
   font-size: 11px;
-  font-weight: 600;
-  padding: 2px 7px;
-  border-radius: var(--radius-pill);
+  font-weight: 700;
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: 1px solid var(--green-border);
+  padding: 2px 8px;
+  border-radius: 99px;
 }
 
-.integrationPill.connected {
-  background: var(--status-green-bg);
-  color: var(--status-green-text);
-  border: 1px solid var(--status-green-border);
-}
-
-.integrationPill.unconnected {
-  background: var(--status-neutral-bg);
-  color: var(--status-neutral-text);
-  border: 1px solid var(--status-neutral-border);
-}
-
-.integrationSubtitle {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.integrationActions {
+.webhookConfigForm {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
   display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 10px;
+  align-items: flex-end;
   flex-wrap: wrap;
 }
 
-/* Collapsible Settings Drawer */
-.integrationConfigDrawer {
+.syncStatusAlert {
   margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-subtle);
-  animation: fadeIn 0.15s ease;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
-.integrationConfigGrid {
+.syncStatusAlert.success {
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: 1px solid var(--green-border);
+}
+
+.syncStatusAlert.error {
+  background: var(--red-bg);
+  color: var(--red-text);
+  border: 1px solid var(--red-border);
+}
+
+.syncStatusAlert.info {
+  background: var(--blue-bg);
+  color: var(--blue-text);
+  border: 1px solid var(--blue-border);
+}
+
+/* Category Filter Tabs */
+.reportCategoryTabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.reportCatTab {
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.reportCatTab:hover {
+  background: var(--surface-alt);
+  color: var(--text-primary);
+}
+
+.reportCatTab.active {
+  background: var(--brand-500);
+  border-color: var(--brand-500);
+  color: #ffffff;
+}
+
+/* Reports Grid */
+.reportsGrid {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
-.integrationFieldGroup {
+.reportCard {
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 0;
+  transition: all 0.15s ease;
 }
 
-.integrationFieldLabel {
-  font-size: 11.5px;
+.reportCard:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--brand-200);
+}
+
+.reportCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.reportIcon {
+  font-size: 22px;
+}
+
+.reportCatBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.reportTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.reportDesc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.reportCardBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.recordCount {
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.integrationInput {
-  width: 100%;
-  padding: 8px 10px;
-  font-size: 12.5px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-base);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  outline: none;
-  transition: border-color 0.12s ease;
-}
-
-.integrationInput:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.12);
-}
-
-.integrationHelp {
-  font-size: 11px;
-  color: var(--text-dim);
-}
-
-/* Categorized Report Group Section */
-.reportCategorySection {
-  margin-bottom: 22px;
-}
-
-.reportCategoryHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.reportCategoryTitle {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.reportCategoryGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 12px;
-}
-
-.reportItemCard {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+/* Multi-Supplier Sheets Registry Table & Manager */
+.supplierRegistryTableWrapper {
+  overflow-x: auto;
+  margin-top: 14px;
   border-radius: var(--radius-md);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 12px;
-  transition: border-color 0.1s ease, box-shadow 0.1s ease;
+  border: 1px solid var(--border-default);
 }
 
-.reportItemCard:hover {
-  border-color: var(--border-base);
-  box-shadow: var(--shadow-subtle);
+.supplierRegistryTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--surface-card);
 }
 
-.reportItemHead {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+.supplierRegistryTable th {
+  background: #f8fafc;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
 }
 
-.reportItemIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-xs);
-  background: var(--bg-surface-subtle);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.supplierRegistryTable td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
 }
 
-.reportItemTitle {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.25;
+.supplierRegistryTable tr:last-child td {
+  border-bottom: none;
 }
 
-.reportItemCount {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 500;
+.supplierRegistryTable tr:hover td {
+  background: #f8fafc;
 }
 
-.reportItemDesc {
+.sheetInput {
+  width: 100%;
+  min-width: 240px;
+  padding: 6px 10px;
   font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.35;
-  margin: 6px 0 0 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-primary);
 }
 
-.reportItemActions {
-  display: flex;
-  gap: 6px;
+.sheetInput:focus {
+  outline: none;
+  border-color: var(--brand-500);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-3px); }
-  to { opacity: 1; transform: translateY(0); }
+.pillSuccess {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+
+.pillWarning {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .supplierRegistryTableWrapper {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .syncHubRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .syncHubRow .btn,
+  .syncHubRow button,
+  .syncHubRow a {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .reportsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .reportCard {
+    padding: 14px 12px;
+  }
+
+  .reportCardBottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .reportCardBottom .btn {
+    min-height: 44px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+

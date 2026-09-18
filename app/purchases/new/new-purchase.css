@@ -1,0 +1,341 @@
+.lineItemsTable th,
+.lineItemsTable td {
+  padding: 8px 10px !important;
+}
+
+.purchaseTotalsBox {
+  margin-top: 18px;
+  padding: 14px 20px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  margin-left: auto;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.totalsRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.totalsRow.grand {
+  border-top: 1px solid var(--border-strong);
+  padding-top: 6px;
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--brand-700);
+}
+
+/* Payment Status Radios */
+.paymentStatusPicker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.statusOpt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.statusOpt:hover {
+  border-color: var(--border-strong);
+}
+
+.statusOpt.active {
+  border-color: var(--brand-500);
+  background: var(--brand-50);
+}
+
+.statusOpt b {
+  display: block;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.statusOpt small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Document Upload */
+.docUploadBox {
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--surface-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.docUploadBox .uploadIcon {
+  font-size: 32px;
+  color: var(--brand-500);
+}
+
+.attachedFileBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Review Summary */
+.reviewSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.reviewSummaryCard {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.summaryLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.summaryVal {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 4px 0 2px;
+}
+
+.purchaseSuccessBanner {
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  color: var(--green-text);
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .paymentStatusPicker {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Purchase Wizard Step 2 - Mobile Stacked Cards */
+.purchaseWizardMobileCards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 !important;
+  margin-top: 12px;
+}
+
+.purchaseItemCard {
+  background: #ffffff;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.purchaseItemCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.itemCardBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.itemCardIndex {
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.itemGstBadge {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.itemUnitBadge {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.itemCardDeleteBtn {
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  font-size: 12px;
+  font-weight: 700;
+  min-height: 38px;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.purchaseItemField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.purchaseItemLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+.purchaseItemInputsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.purchaseNumericInput,
+.purchaseSelectInput {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 10px;
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.purchaseItemExpandable {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+}
+
+.purchaseItemExpandSummary {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+}
+
+.purchaseItemExpandSummary::-webkit-details-marker {
+  display: none;
+}
+
+.purchaseItemExpandContent {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expandFieldRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.taxBreakdownStrip {
+  display: flex;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #e2e8f0;
+  margin-top: 4px;
+}
+
+.taxBreakdownCol small {
+  display: block;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.taxBreakdownCol b {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.purchaseItemCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-default);
+}
+
+.itemTotalLabel {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.itemTotalVal {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--brand-700);
+}
